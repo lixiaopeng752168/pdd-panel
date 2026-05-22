@@ -190,6 +190,7 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
         <div class="btn-group">
           <button class="btn btn-success" id="btn-launch">▶ 启动浏览器</button>
           <button class="btn btn-danger" id="btn-close" disabled>■ 关闭浏览器</button>
+          <button class="btn btn-warning" id="btn-check">🔍 检测</button>
         </div>
       </div>
       <div class="card"><div class="card-title">端口状态</div>
@@ -561,6 +562,14 @@ $('btn-launch').addEventListener('click',async()=>{
   $('btn-launch').disabled=false;
 });
 
+$('btn-check').addEventListener('click',async()=>{
+  $('btn-check').disabled=true;
+  addLog('正在检测浏览器在线状态...','info');
+  await checkBrowserStatus();
+  addLog('✅ 端口状态已更新','success');
+  $('btn-check').disabled=false;
+});
+
 $('btn-close').addEventListener('click',async()=>{
   addLog('正在关闭浏览器...','info');
   try{
@@ -569,8 +578,8 @@ $('btn-close').addEventListener('click',async()=>{
     if(d.success){addLog('✅ '+d.message,'success');checkBrowserStatus();}
     else addLog('❌ '+d.message,'error');
   }catch(e){addLog('❌ 请求失败: '+e.message,'error');}
+  $('btn-close').disabled=false;
 });
-
 $('btn-browse').addEventListener('click',async()=>{
   try{
     const r=await fetch('/api/select_folder',{method:'POST'});
