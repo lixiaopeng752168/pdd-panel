@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>拼多多运营面板 v4.0</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0a0a0f;
+      --bg2: rgba(10,15,30,0.95);
+      --bg-card: rgba(10,15,30,0.8);
+      --border: rgba(0,240,255,0.2);
+      --cyan: #00f0ff;
+      --green: #00ff88;
+      --red: #ff4757;
+      --yellow: #ffd93d;
+      --purple: #a855f7;
+      --text: #e0e6ed;
+      --text-dim: #64748b;
+      --sidebar-w: 68px;
+    }
+    .result-report { font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; }
+body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow: hidden; }
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-w); background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 12px 0; z-index: 200; }
+    .sidebar-logo { width: 42px; height: 42px; background: linear-gradient(135deg, var(--cyan), var(--purple)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; margin-bottom: 18px; box-shadow: 0 0 12px rgba(0,240,255,0.3); }
+    .nav-item { width: 50px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border-radius: 10px; margin-bottom: 3px; transition: all 0.2s; position: relative; color: var(--text-dim); }
+    .nav-item:hover { background: rgba(0,240,255,0.08); color: var(--text); }
+    .nav-item.active { background: rgba(0,240,255,0.12); color: var(--cyan); }
+    .nav-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 22px; background: var(--cyan); border-radius: 0 2px 2px 0; box-shadow: 0 0 8px var(--cyan); }
+    .nav-label { font-size: 8px; margin-top: 1px; }
+    .sidebar-bottom { margin-top: auto; padding-bottom: 6px; }
+    .main { margin-left: var(--sidebar-w); height: 100vh; display: flex; flex-direction: column; }
+    .header-bar { height: 44px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 12px; flex-shrink: 0; }
+    .header-title { font-size: 13px; font-weight: 600; color: var(--cyan); }
+    .header-status { font-size: 11px; color: var(--text-dim); margin-left: auto; }
+    .header-status .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 5px var(--green); margin-right: 4px; vertical-align: middle; animation: blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .content { flex: 1; overflow-y: auto; padding: 16px 20px; }
+    .content::-webkit-scrollbar { width: 4px; }
+    .content::-webkit-scrollbar-track { background: transparent; }
+    .content::-webkit-scrollbar-thumb { background: rgba(0,240,255,0.2); border-radius: 2px; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .card { background: var(--bg-card); border-radius: 10px; padding: 18px 20px; margin-bottom: 14px; border: 1px solid var(--border); backdrop-filter: blur(10px); }
+    .card-title { font-size: 12px; font-weight: 600; color: var(--cyan); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+    .card-title::before { content: '//'; color: var(--green); font-weight: 400; }
+    .form-row { display: flex; gap: 14px; margin-bottom: 12px; flex-wrap: wrap; }
+    .form-row > * { flex: 1; min-width: 160px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 13px; color: var(--text-dim); margin-bottom: 5px; font-weight: 500; }
+    input, select { width: 100%; padding: 9px 11px; border-radius: 6px; border: 1px solid rgba(0,240,255,0.22); background: rgba(0,0,0,0.4); color: var(--text); font-size: 12px; transition: all 0.3s; }
+    input:focus, select:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 10px rgba(0,240,255,0.2); }
+    input::placeholder { color: #475569; }
+    select option { background: #0a0a0f; }
+    .btn { padding: 9px 18px; border-radius: 6px; border: none; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: linear-gradient(135deg, var(--cyan), #0080ff); color: #0a0a0f; }
+    .btn-primary:hover:not(:disabled) { box-shadow: 0 0 18px rgba(0,240,255,0.4); transform: translateY(-1px); }
+    .btn-success { background: linear-gradient(135deg, var(--green), #00cc6a); color: #0a0a0f; }
+    .btn-success:hover:not(:disabled) { box-shadow: 0 0 18px rgba(0,255,136,0.4); transform: translateY(-1px); }
+    .btn-danger { background: linear-gradient(135deg, var(--red), #c0392b); color: white; }
+    .btn-danger:hover:not(:disabled) { box-shadow: 0 0 18px rgba(255,71,87,0.4); transform: translateY(-1px); }
+    .btn-warning { background: linear-gradient(135deg, var(--yellow), #ff9500); color: #0a0a0f; }
+    .btn-warning:hover:not(:disabled) { box-shadow: 0 0 18px rgba(255,217,61,0.4); transform: translateY(-1px); }
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .port-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+    .port-item { background: rgba(0,0,0,0.4); border-radius: 8px; padding: 12px; text-align: center; border: 1px solid rgba(0,240,255,0.1); transition: all 0.2s; }
+    .port-item:hover { border-color: rgba(0,240,255,0.3); transform: translateY(-1px); }
+    .port-item .port { font-size: 15px; font-weight: 700; color: var(--cyan); }
+    .port-item .store { font-size: 9px; color: var(--text-dim); margin: 4px 0 6px; line-height: 1.3; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .dot.on { background: var(--green); box-shadow: 0 0 5px var(--green); }
+    .dot.off { background: #475569; }
+    .dot.run { background: var(--yellow); box-shadow: 0 0 5px var(--yellow); animation: blink 0.8s infinite; }
+    #log-container, #log-container-all { background: rgba(0,0,0,0.5); border-radius: 8px; padding: 12px; overflow-y: auto; font-family: 'Monaco','Menlo','Consolas',monospace; font-size: 10px; line-height: 1.7; border: 1px solid rgba(0,240,255,0.08); }
+    #log-container { height: 220px; }
+    #log-container-all { height: 380px; }
+    .log-line { margin-bottom: 1px; }
+    .log-line.info { color: #94a3b8; }
+    .log-line.success { color: var(--green); }
+    .log-line.error { color: var(--red); }
+    .log-line.warning { color: var(--yellow); }
+    .log-line .t { color: #475569; margin-right: 5px; }
+    .dash-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+    .dash-stat { background: rgba(0,0,0,0.4); border-radius: 8px; padding: 14px; border: 1px solid rgba(0,240,255,0.1); }
+    .dash-stat .label { font-size: 9px; color: var(--text-dim); margin-bottom: 5px; letter-spacing: 0.5px; }
+    .dash-stat .value { font-size: 22px; font-weight: 700; color: var(--cyan); }
+    .dash-stat .sub { font-size: 9px; color: var(--text-dim); margin-top: 3px; }
+    .quick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+    .quick-item { background: linear-gradient(145deg, rgba(20,25,40,0.95), rgba(10,12,20,0.9)); border-radius: 12px; padding: 16px 14px; cursor: pointer; border: 1px solid rgba(0,240,255,0.12); transition: all 0.25s; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04); }
+    .quick-item:hover { border-color: rgba(0,240,255,0.4); background: linear-gradient(145deg, rgba(0,240,255,0.08), rgba(0,240,255,0.03)); transform: translateY(-3px) scale(1.01); box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 20px rgba(0,240,255,0.1); }
+    .quick-item:active { transform: translateY(-1px) scale(0.99); }
+    .quick-item .icon { font-size: 32px; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+    .quick-item .name { font-size: 12px; font-weight: 700; color: var(--text); }
+    .quick-item .desc { font-size: 9px; color: var(--text-dim); margin-top: 2px; }
+    .dev-card { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 20px; text-align: center; border: 1px dashed rgba(0,240,255,0.15); color: var(--text-dim); }
+    .dev-card .icon { font-size: 28px; margin-bottom: 6px; opacity: 0.35; }
+    .dev-card h3 { font-size: 12px; margin-bottom: 3px; }
+    .dev-card p { font-size: 9px; opacity: 0.45; }
+    .module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+    @media (max-width: 900px) { .dash-grid { grid-template-columns: repeat(2, 1fr); } }
+  </style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-logo">H</div>
+  <div class="nav-item active" data-page="home"><span>🏠</span><span class="nav-label">首页</span></div>
+  <div class="nav-item" data-page="browser"><span>🌐</span><span class="nav-label">浏览器</span></div>
+  <div class="nav-item" data-page="video"><span>📹</span><span class="nav-label">视频</span></div>
+  <div class="nav-item" data-page="order"><span>⏰</span><span class="nav-label">拍单</span></div>
+  <div class="nav-item" data-page="report"><span>📊</span><span class="nav-label">播报</span></div>
+  <div class="nav-item" data-page="review"><span>⚠️</span><span class="nav-label">差评</span></div>
+  <div class="nav-item" data-page="audit"><span>🔍</span><span class="nav-label">审核</span></div>
+  <div class="nav-item" data-page="eval"><span>📝</span><span class="nav-label">评价</span></div>
+  <div class="nav-item" data-page="price"><span>💰</span><span class="nav-label">价格</span></div>
+  <div class="nav-item" data-page="tools"><span>🧰</span><span class="nav-label">工具</span></div>
+  <div class="sidebar-bottom"><div class="nav-item" data-page="logs"><span>📋</span><span class="nav-label">日志</span></div></div>
+</nav>
+<div class="main">
+  <div class="header-bar">
+    <span class="header-title" id="header-title">🏠 首页</span>
+    <span class="header-status"><span class="dot"></span>系统运行中</span>
+  </div>
+  <div class="content">
+    <!-- 首页 -->
+    <div class="page active" id="page-home">
+      <div class="dash-grid">
+        <div class="dash-stat"><div class="label">在线端口</div><div class="value" id="stat-online">--/7</div><div class="sub">Chrome 实例</div></div>
+        <div class="dash-stat"><div class="label">任务状态</div><div class="value" id="stat-task" style="font-size:14px;color:var(--text-dim)">空闲</div><div class="sub" id="stat-task-sub">无运行中任务</div></div>
+        <div class="dash-stat"><div class="label">今日执行</div><div class="value" id="stat-cron" style="font-size:14px;color:var(--text-dim)">--</div><div class="sub">定时任务</div></div>
+        <div class="dash-stat"><div class="label">功能模块</div><div class="value" style="font-size:18px">8</div><div class="sub">已集成</div></div>
+      </div>
+      <div class="card"><div class="card-title">快捷入口</div>
+        <div class="quick-grid">
+          <div class="quick-item" onclick="switchPage('browser')"><span class="icon">🌐</span><div><div class="name">浏览器控制</div><div class="desc">7店铺独立Chrome</div></div></div>
+          <div class="quick-item" onclick="switchPage('video')"><span class="icon">📹</span><div><div class="name">视频批量发布</div><div class="desc">批量上传+营销文案</div></div></div>
+          <div class="quick-item" onclick="switchPage('order')"><span class="icon">⏰</span><div><div class="name">定时拍单</div><div class="desc">自动循环下单</div></div></div>
+          <div class="quick-item" onclick="switchPage('report')"><span class="icon">📊</span><div><div class="name">数据播报</div><div class="desc">销售+达播汇总</div></div></div>
+          <div class="quick-item" onclick="switchPage('review')"><span class="icon">⚠️</span><div><div class="name">差评处理</div><div class="desc">举报+负面屏蔽</div></div></div>
+          <div class="quick-item" onclick="switchPage('audit')"><span class="icon">🔍</span><div><div class="name">视频审核</div><div class="desc">审核状态查询</div></div></div>
+          <div class="quick-item" onclick="switchPage('eval')"><span class="icon">📝</span><div><div class="name">评价抓取</div><div class="desc">评价数据→飞书</div></div></div>
+          <div class="quick-item" onclick="switchPage('price')"><span class="icon">💰</span><div><div class="name">价格监控</div><div class="desc">价格检查+榜单截图</div></div></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-title">端口状态</div>
+        <div class="port-grid">
+          <div class="port-item"><div class="port">9666</div><div class="store">KONKA康佳健康</div><span class="dot off" id="dot-9666"></span></div>
+          <div class="port-item"><div class="port">9667</div><div class="store">康佳环境电器</div><span class="dot off" id="dot-9667"></span></div>
+          <div class="port-item"><div class="port">9668</div><div class="store">康佳冷暖电器</div><span class="dot off" id="dot-9668"></span></div>
+          <div class="port-item"><div class="port">9669</div><div class="store">康佳家居清洁</div><span class="dot off" id="dot-9669"></span></div>
+          <div class="port-item"><div class="port">9670</div><div class="store">海尔岑甫</div><span class="dot off" id="dot-9670"></span></div>
+          <div class="port-item"><div class="port">9671</div><div class="store">和草集</div><span class="dot off" id="dot-9671"></span></div>
+          <div class="port-item"><div class="port">9672</div><div class="store">金正NINTAUS</div><span class="dot off" id="dot-9672"></span></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:4px">
+        <div class="card-title" style="justify-content:space-between">
+          <span>执行日志</span>
+          <button class="btn" style="background:#334155;padding:4px 10px;font-size:10px" id="btn-clear-log-home">🗑 清除</button>
+        </div>
+        <div id="log-container-home"><div class="log-line info"><span class="t">[--:--:--]</span>✨ 面板已就绪</div></div>
+      </div>
+    </div>
+    <!-- 浏览器 -->
+    <div class="page" id="page-browser">
+      <div class="card"><div class="card-title">Chrome 初始化</div>
+        <p style="font-size:11px;color:var(--text-dim);line-height:1.7;margin-bottom:12px">点击「初始化Chrome」在桌面生成7个店铺快捷方式 → 双击对应店铺快捷方式登录一次 → 之后该店铺浏览器会自动复用登录状态。</p>
+        <button class="btn btn-primary" id="btn-init">🔧 初始化Chrome</button>
+      </div>
+      <div class="card"><div class="card-title">启动 / 关闭浏览器</div>
+        <div class="form-row">
+          <div class="form-group"><label>选择店铺</label>
+            <select id="store-select">
+              <option value="9666">9666 - KONKA康佳健康电器</option>
+              <option value="9667">9667 - 康佳环境电器</option>
+              <option value="9668">9668 - 康佳冷暖电器</option>
+              <option value="9669">9669 - 康佳家居清洁</option>
+              <option value="9670">9670 - 海尔岑甫</option>
+              <option value="9671">9671 - 和草集</option>
+              <option value="9672">9672 - 金正</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-success" id="btn-launch">▶ 启动浏览器</button>
+          <button class="btn btn-danger" id="btn-close" disabled>■ 关闭浏览器</button>
+        </div>
+      </div>
+      <div class="card"><div class="card-title">端口状态</div>
+        <div class="port-grid">
+          <div class="port-item"><div class="port">9666</div><div class="store">KONKA康佳健康</div><span class="dot off" id="dot2-9666"></span></div>
+          <div class="port-item"><div class="port">9667</div><div class="store">康佳环境电器</div><span class="dot off" id="dot2-9667"></span></div>
+          <div class="port-item"><div class="port">9668</div><div class="store">康佳冷暖电器</div><span class="dot off" id="dot2-9668"></span></div>
+          <div class="port-item"><div class="port">9669</div><div class="store">康佳家居清洁</div><span class="dot off" id="dot2-9669"></span></div>
+          <div class="port-item"><div class="port">9670</div><div class="store">海尔岑甫</div><span class="dot off" id="dot2-9670"></span></div>
+          <div class="port-item"><div class="port">9671</div><div class="store">和草集</div><span class="dot off" id="dot2-9671"></span></div>
+          <div class="port-item"><div class="port">9672</div><div class="store">金正NINTAUS</div><span class="dot off" id="dot2-9672"></span></div>
+        </div>
+      </div>
+    </div>
+    <!-- 视频 -->
+    <div class="page" id="page-video">
+      <div class="card"><div class="card-title">视频批量发布</div>
+        <div class="form-row">
+          <div class="form-group"><label>选择店铺</label>
+            <select id="video-store-select">
+              <option value="9666">9666 - KONKA康佳健康</option>
+              <option value="9667">9667 - 康佳环境电器</option>
+              <option value="9668">9668 - 康佳冷暖电器</option>
+              <option value="9669">9669 - 康佳家居清洁</option>
+              <option value="9670">9670 - 海尔岑甫</option>
+              <option value="9671">9671 - 和草集</option>
+              <option value="9672">9672 - 金正</option>
+            </select>
+          </div>
+          <div class="form-group"><label>视频文件夹路径</label>
+            <div style="display:flex;gap:6px">
+              <input type="text" id="video-dir" placeholder="点击浏览选择文件夹" style="flex:1">
+              <button class="btn btn-primary" id="btn-browse" style="padding:8px 14px;white-space:nowrap">📁 选择</button>
+            </div>
+          </div>
+          <div class="form-group"><label>产品名称</label><input type="text" id="product-name" placeholder="如：海尔挂烫机"></div>
+          <div class="form-group"><label>核心卖点（选填，用于生成描述）</label><input type="text" id="product-highlight" placeholder="如：强劲蒸汽、快速除皱、轻巧便携"></div>
+          <div class="form-group"><label>绑定商品ID</label><input type="text" id="goods-id" value="488321748320" placeholder="留空不绑定"></div>
+          <div class="form-group" style="flex:none"><label>等待(秒)</label><input type="text" id="upload-wait" value="60" style="width:70px"></div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-warning" id="btn-start">▶ 开始发布</button>
+          <button class="btn btn-danger" id="btn-stop" disabled>■ 停止</button>
+          <button class="btn" style="background:#334155" id="btn-clear-log">🗑 清除</button>
+        </div>
+      </div>
+      <div class="card"><div class="card-title">执行日志</div>
+        <div id="log-container"><div class="log-line info"><span class="t">[--:--:--]</span>✨ 视频发布模块已就绪</div></div>
+      </div>
+      <div class="result-report" id="video-result" style="display:none;margin-top:12px;padding:12px 14px;background:#0f172a;border-radius:8px;border:1px solid #1e3a5f">
+        <div id="video-result-text" style="font-size:13px;line-height:1.7"></div>
+      </div>
+    </div>
+    <!-- 拍单 -->
+    <div class="page" id="page-order">
+      <div class="card"><div class="card-title">定时拍单</div>
+        <div class="form-row">
+          <div class="form-group" style="flex:2"><label>商品链接</label><input type="text" id="order-url" placeholder="https://mobile.yangkeduo.com/goods.html?goods_id=..."></div>
+          <div class="form-group"><label>端口</label>
+            <select id="order-port">
+              <option value="9666">9666 - KONKA康佳</option>
+              <option value="9667">9667 - 康佳环境</option>
+              <option value="9668">9668 - 康佳冷暖</option>
+              <option value="9669">9669 - 康佳家居</option>
+              <option value="9670">9670 - 海尔岑甫</option>
+              <option value="9671">9671 - 和草集</option>
+              <option value="9672">9672 - 金正</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex:2"><label>SKU名称</label><input type="text" id="order-sku" placeholder="如：全能洗地机【一键自清洁 省时省力】"></div>
+          <div class="form-group"><label>数量</label><input type="number" id="order-qty" value="200" style="width:90px"></div>
+          <div class="form-group"><label>间隔(分)</label><input type="number" id="order-interval" value="16" style="width:75px"></div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-warning" id="btn-order-start">▶ 启动拍单</button>
+          <button class="btn btn-danger" id="btn-order-stop" disabled>■ 停止</button>
+          <span id="order-status" style="font-size:10px;color:var(--text-dim);margin-left:8px;line-height:34px"></span>
+        </div>
+      </div>
+    </div>
+    <!-- 数据播报 -->
+    <div class="page" id="page-report">
+      <div class="card"><div class="card-title">每日销售播报</div>
+        <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">自动汇总当日各店铺订单数据，生成销售报表并发送至飞书群。</p>
+        <div class="btn-group"><button class="btn btn-primary" disabled>📊 立即生成</button><button class="btn" style="background:#334155" disabled>⏰ 设置定时</button></div>
+      </div>
+      <div class="card"><div class="card-title">达播数据汇总</div>
+        <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">汇总各平台达播带货数据，包括抖音、快手等渠道的销售统计。</p>
+        <div class="btn-group"><button class="btn btn-primary" disabled>📦 立即汇总</button><button class="btn" style="background:#334155" disabled>⏰ 设置定时</button></div>
+      </div>
+      <div class="result-report" id="order-result" style="display:none;margin-top:12px;padding:12px 14px;background:#0f172a;border-radius:8px;border:1px solid #1e3a5f">
+        <div id="order-result-text" style="font-size:13px;line-height:1.7"></div>
+      </div>
+    </div>
+    <!-- 差评处理 -->
+    <div class="page" id="page-review">
+      <div class="card"><div class="card-title">差评举报</div>
+        <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">自动筛选1-3星评价并举报同行恶意差评，举报完成后写入飞书表格。</p>
+        <div class="form-row" style="margin-bottom:12px">
+          <div class="form-group"><label>选择店铺</label>
+            <select id="review-port">
+              <option value="9666">9666 - KONKA康佳健康电器</option>
+              <option value="9667">9667 - 康佳环境电器</option>
+              <option value="9668">9668 - 康佳冷暖电器</option>
+              <option value="9669">9669 - 康佳家居清洁</option>
+              <option value="9670">9670 - 海尔岑甫专卖店</option>
+              <option value="9671">9671 - 和草集官方旗舰店</option>
+              <option value="9672">9672 - 金正NINTAUS官方旗舰店</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:2"><label>飞书表格链接</label>
+            <input type="text" id="review-feishu-url" placeholder="https://my.feishu.cn/sheets/SWOwsGJtYh31wlt9x8OcakoUnBb">
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-danger" id="btn-review-start">⚠️ 启动差评举报</button>
+          <button class="btn btn-secondary" id="btn-review-stop" disabled>■ 停止</button>
+          <span id="review-status" style="font-size:10px;color:var(--text-dim);margin-left:8px;line-height:34px"></span>
+        </div>
+      </div>
+      <div class="card"><div class="card-title">负面评价屏蔽</div>
+        <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">对恶意差评进行屏蔽处理，保护店铺声誉。</p>
+        <div class="btn-group"><button class="btn btn-danger" disabled>🚫 立即处理</button></div>
+      </div>
+    </div>
+    <!-- 视频审核 -->
+    <div class="page" id="page-audit">
+      <div class="card"><div class="card-title">多多视频审核</div>
+        <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">自动播放视频并审核，每条视频播放8秒后点击确认，自动写入飞书统计表格。</p>
+        <div class="form-row" style="margin-bottom:12px">
+          <div class="form-group"><label>选择店铺</label>
+            <select id="audit-port">
+              <option value="9666">9666 - KONKA康佳健康电器</option>
+              <option value="9667">9667 - 康佳环境电器</option>
+              <option value="9668">9668 - 康佳冷暖电器</option>
+              <option value="9669">9669 - 康佳家居清洁</option>
+              <option value="9670">9670 - 海尔岑甫专卖店</option>
+              <option value="9671">9671 - 和草集官方旗舰店</option>
+              <option value="9672">9672 - 金正NINTAUS官方旗舰店</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:2"><label>飞书表格链接</label>
+            <input type="text" id="audit-feishu-url" placeholder="https://my.feishu.cn/wiki/QHZwwi9JPi8BmqkCLXBcmIO6n1b?sheet=54db81">
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-danger" id="btn-audit-start">⚠️ 开始执行</button>
+          <button class="btn btn-secondary" id="btn-audit-stop" disabled>■ 停止</button>
+          <span id="audit-status" style="font-size:10px;color:var(--text-dim);margin-left:8px;line-height:34px"></span>
+        </div>
+      </div>
+      <div class="result-report" id="audit-result" style="display:none;margin-top:12px;padding:12px 14px;background:#0f172a;border-radius:8px;border:1px solid #1e3a5f">
+        <div id="audit-result-text" style="font-size:13px;line-height:1.7">等待执行...</div>
+      </div>
+    </div>
+    <!-- 评价抓取 -->
+    <div class="page" id="page-eval">
+      <div class="card"><div class="card-title">拼多多评价抓取</div>
+        <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:14px">输入商品ID和星级，筛选对应评价数据并写入飞书表格。</p>
+        <div class="form-row">
+          <div class="form-group"><label>选择店铺</label>
+            <select id="eval-port">
+              <option value="9666">9666 - KONKA康佳健康电器</option>
+              <option value="9667">9667 - 康佳环境电器</option>
+              <option value="9668">9668 - 康佳冷暖电器</option>
+              <option value="9669">9669 - 康佳家居清洁</option>
+              <option value="9670">9670 - 海尔岑甫专卖店</option>
+              <option value="9671">9671 - 和草集官方旗舰店</option>
+              <option value="9672">9672 - 金正NINTAUS官方旗舰店</option>
+            </select>
+          </div>
+          <div class="form-group"><label>商品ID</label>
+            <input type="text" id="eval-goods-id" placeholder="如：921509209289">
+          </div>
+          <div class="form-group"><label>评价星级</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+              <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px">
+                <input type="checkbox" class="eval-star-cb" value="1" checked style="width:14px;height:14px;accent-color:var(--primary)"> ⭐1星
+              </label>
+              <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px">
+                <input type="checkbox" class="eval-star-cb" value="2" checked style="width:14px;height:14px;accent-color:var(--primary)"> ⭐⭐2星
+              </label>
+              <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px">
+                <input type="checkbox" class="eval-star-cb" value="3" checked style="width:14px;height:14px;accent-color:var(--primary)"> ⭐⭐⭐3星
+              </label>
+              <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px">
+                <input type="checkbox" class="eval-star-cb" value="4" style="width:14px;height:14px;accent-color:var(--primary)"> ⭐⭐⭐⭐4星
+              </label>
+              <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px">
+                <input type="checkbox" class="eval-star-cb" value="5" style="width:14px;height:14px;accent-color:var(--primary)"> ⭐⭐⭐⭐⭐5星
+              </label>
+            </div>
+          </div>
+          <div class="form-group" style="flex:2"><label>飞书表格链接（选填）</label>
+            <input type="text" id="eval-feishu-url" placeholder="https://my.feishu.cn/sheets/SWOwsGJtYh31wlt9x8OcakoUnBb">
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="btn-eval-start">📥 开始抓取</button>
+          <button class="btn btn-secondary" id="btn-eval-stop" disabled>■ 停止</button>
+          <span id="eval-status" style="font-size:10px;color:var(--text-dim);margin-left:8px;line-height:34px"></span>
+        </div>
+      </div>
+      <div class="card"><div class="card-title">执行日志</div>
+        <div id="log-container-eval"><div class="log-line info"><span class="t">[--:--:--]</span>✨ 评价抓取模块已就绪</div></div>
+      </div>
+      <div class="result-report" id="eval-result" style="display:none;margin-top:12px;padding:12px 14px;background:#0f172a;border-radius:8px;border:1px solid #1e3a5f">
+        <div id="eval-result-text" style="font-size:13px;line-height:1.7"></div>
+      </div>
+    </div>
+    <!-- 价格监控 -->
+    <div class="page" id="page-price">
+      <div class="card"><div class="card-title">价格检查</div>
+        <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">监控商品价格变化，发现低价乱价行为。</p>
+        <div class="btn-group"><button class="btn btn-primary" disabled>🔍 立即检查</button></div>
+      </div>
+      <div class="card"><div class="card-title">榜单截图</div>
+        <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">定期截取畅销榜单，监控竞品排名变化。</p>
+        <div class="btn-group"><button class="btn btn-primary" disabled>📸 立即截图</button></div>
+      </div>
+    </div>
+    <!-- 工具箱 -->
+    <div class="page" id="page-tools">
+      <div class="module-grid">
+        <div class="dev-card"><div class="icon">📹</div><h3>视频审核</h3><p>监控审核状态</p></div>
+        <div class="dev-card"><div class="icon">📦</div><h3>库存检查</h3><p>批量检查库存</p></div>
+        <div class="dev-card"><div class="icon">🎯</div><h3>达人投跑</h3><p>管理达人推广</p></div>
+        <div class="dev-card"><div class="icon">📝</div><h3>评论管理</h3><p>批量回复评论</p></div>
+        <div class="dev-card"><div class="icon">🤖</div><h3>智能客服</h3><p>自动接待咨询</p></div>
+        <div class="dev-card"><div class="icon">🔄</div><h3>批量改价</h3><p>快速调整价格</p></div>
+      </div>
+      <div class="result-report" id="review-result" style="display:none;margin-top:12px;padding:12px 14px;background:#0f172a;border-radius:8px;border:1px solid #1e3a5f">
+        <div id="review-result-text" style="font-size:13px;line-height:1.7"></div>
+      </div>
+    </div>
+    <!-- 日志 -->
+    <div class="page" id="page-logs">
+      <div class="card"><div class="card-title">系统日志</div>
+        <div style="margin-bottom:8px"><button class="btn" style="background:#334155;font-size:10px;padding:5px 12px" id="btn-clear-all-log">🗑 清除日志</button></div>
+        <div id="log-container-all"><div class="log-line info"><span class="t">[--:--:--]</span>✨ 系统日志已就绪</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+const pages = document.querySelectorAll('.page');
+const navItems = document.querySelectorAll('.nav-item');
+const pageTitles = {home:'🏠 首页',browser:'🌐 浏览器控制',video:'📹 视频批量发布',order:'⏰ 定时拍单',report:'📊 数据播报',review:'⚠️ 差评处理',audit:'🔍 视频审核',eval:'📝 评价抓取',price:'💰 价格监控',tools:'🧰 工具箱',logs:'📋 系统日志'};
+
+function switchPage(name) {
+  pages.forEach(p => p.classList.remove('active'));
+  navItems.forEach(n => n.classList.remove('active'));
+  const t = $('page-'+name);
+  if (t) t.classList.add('active');
+  navItems.forEach(n => { if(n.dataset.page===name) n.classList.add('active'); });
+  $('header-title').textContent = pageTitles[name]||name;
+  if(name==='browser') syncDots();
+}
+navItems.forEach(item => { item.addEventListener('click', () => switchPage(item.dataset.page)); });
+
+const logEl = $('log-container');
+const logElHome = $('log-container-home');
+function addLog(msg,type='info') {
+  const t = new Date().toLocaleTimeString('zh-CN',{hour12:false});
+  const div = document.createElement('div');
+  div.className = 'log-line '+type;
+  div.innerHTML = '<span class="t">['+t+']</span>'+msg;
+  logEl.appendChild(div);
+  logEl.scrollTop = logEl.scrollHeight;
+  if(logElHome){ const h=div.cloneNode(true); logElHome.appendChild(h); logElHome.scrollTop = logElHome.scrollHeight; }
+  const all = $('log-container-all');
+  if(all){ const d=div.cloneNode(true); all.appendChild(d); all.scrollTop = all.scrollHeight; }
+}
+function clearLog(){ logEl.innerHTML='<div class="log-line info"><span class="t">[--:--:--]</span>✨ 日志已清除</div>'; if(logElHome) logElHome.innerHTML='<div class="log-line info"><span class="t">[--:--:--]</span>✨ 日志已清除</div>'; }
+$('btn-clear-log-home') && $('btn-clear-log-home').addEventListener('click', clearLog);
+
+function syncDots(){
+  [9666,9667,9668,9669,9670,9671,9672].forEach(p=>{
+    const a=$('dot-'+p),b=$('dot2-'+p);
+    if(a&&b) b.className=a.className;
+  });
+}
+
+async function checkBrowserStatus(){
+  try{
+    const resp = await fetch('/api/browser_status');
+    const data = await resp.json();
+    $('btn-launch').disabled = data.running;
+    $('btn-close').disabled = !data.running;
+    if(data.ports){
+      let online=0;
+      [9666,9667,9668,9669,9670,9671,9672].forEach(p=>{
+        const on=!!data.ports[p];
+        const dot=$('dot-'+p),dot2=$('dot2-'+p);
+        if(dot) dot.className='dot '+(on?'on':'off');
+        if(dot2) dot2.className='dot '+(on?'on':'off');
+        if(on) online++;
+      });
+      $('stat-online').textContent=online+'/7';
+    }
+    if(data.running){
+      $('stat-task').textContent='进行中';
+      $('stat-task').style.color='var(--yellow)';
+      $('stat-task-sub').textContent='端口: '+data.port;
+    }else{
+      $('stat-task').textContent='空闲';
+      $('stat-task').style.color='var(--text-dim)';
+      $('stat-task-sub').textContent='无运行中任务';
+    }
+  }catch(e){}
+}
+
+$('btn-init').addEventListener('click',async()=>{
+  $('btn-init').disabled=true;
+  addLog('正在创建Chrome快捷方式...','info');
+  try{
+    const r=await fetch('/api/init_chrome',{method:'POST'});
+    const d=await r.json();
+    if(d.success){addLog('✅ Chrome快捷方式创建成功！','success');addLog('📁 桌面已生成7个店铺快捷方式','success');}
+    else addLog('❌ '+d.message,'error');
+  }catch(e){addLog('❌ 请求失败: '+e.message,'error');}
+  $('btn-init').disabled=false;
+});
+
+$('btn-launch').addEventListener('click',async()=>{
+  const port=parseInt($('store-select').value);
+  addLog('正在启动浏览器，端口: '+port+'...','info');
+  $('btn-launch').disabled=true;
+  try{
+    const r=await fetch('/api/launch_browser',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({port})});
+    const d=await r.json();
+    if(d.success){addLog('✅ '+d.message,'success');checkBrowserStatus();}
+    else addLog('❌ '+d.message,'error');
+  }catch(e){addLog('❌ 请求失败: '+e.message,'error');}
+  $('btn-launch').disabled=false;
+});
+
+$('btn-close').addEventListener('click',async()=>{
+  addLog('正在关闭浏览器...','info');
+  try{
+    const r=await fetch('/api/close_browser',{method:'POST'});
+    const d=await r.json();
+    if(d.success){addLog('✅ '+d.message,'success');checkBrowserStatus();}
+    else addLog('❌ '+d.message,'error');
+  }catch(e){addLog('❌ 请求失败: '+e.message,'error');}
+});
+
+$('btn-browse').addEventListener('click',async()=>{
+  try{
+    const r=await fetch('/api/select_folder',{method:'POST'});
+    const d=await r.json();
+    if(d.success&&d.path){$('video-dir').value=d.path;addLog('已选择: '+d.path,'success');}
+  }catch(e){addLog('❌ 选择文件夹失败: '+e.message,'error');}
+});
+
+let eventSource=null;
+$('btn-start').addEventListener('click',async()=>{
+  const vDir=$('video-dir').value.trim();
+  if(!vDir){addLog('❌ 请输入视频文件夹路径','error');return;}
+  $('btn-start').disabled=true;
+  $('btn-stop').disabled=false;
+  $('stat-task').textContent='进行中';
+  $('stat-task').style.color='var(--yellow)';
+  addLog('========================================','info');
+  addLog('🚀 开始视频发布任务','info');
+  addLog('   店铺端口: '+$('video-store-select').value,'info');
+  addLog('   视频目录: '+vDir,'info');
+  addLog('   产品名称: '+($('product-name').value.trim()||'（空）'),'info');
+  addLog('   核心卖点: '+($('product-highlight').value.trim()||'（空）'),'info');
+  addLog('   商品ID: '+($('goods-id').value.trim()||'不绑定'),'info');
+  addLog('========================================','info');
+  $('video-result').style.display='none';
+  eventSource=new EventSource('/api/log_stream');
+  eventSource.onmessage=function(e){
+    if(e.data&&!e.data.startsWith(':')){
+      let t='info';
+      if(e.data.includes('✅')||e.data.includes('成功')||e.data.includes('完成')) t='success';
+      else if(e.data.includes('❌')||e.data.includes('失败')||e.data.includes('错误')) t='error';
+      else if(e.data.includes('⚠')) t='warning';
+      addLog(e.data,t);
+    }
+  };
+  eventSource.onerror=function(){};
+  try{
+    const fd=new URLSearchParams();
+    fd.append('storePort',$('video-store-select').value);
+    fd.append('videoDir',vDir);
+    fd.append('productName',$('product-name').value.trim());
+    fd.append('productHighlight',$('product-highlight').value.trim());
+    fd.append('goodsId',$('goods-id').value.trim());
+    fd.append('uploadWait',$('upload-wait').value||'60');
+    const r=await fetch('/api/start_task',{method:'POST',body:fd});
+    const d=await r.json();
+    if(d.success){
+      addLog('✅ '+d.message,'success');
+      $('video-result').style.display='block';
+      $('video-result-text').innerHTML='⏳ 视频上传中，请稍候...';
+      // 轮询任务结果，拿到真实数据后更新显示
+      let pollCount = 0;
+      const pollResult = setInterval(async () => {
+        pollCount++;
+        try {
+          const rr = await fetch('/api/task_result');
+          const rd = await rr.json();
+          if (rd.video) {
+            clearInterval(pollResult);
+            $('video-result-text').innerHTML = `✅ <b>${rd.video.store}</b> 已成功上传 <b>${rd.video.total}</b> 条视频（<b>${rd.video.product}</b>）`;
+          } else if (pollCount > 720) { // 超过60分钟停止轮询
+            clearInterval(pollResult);
+            $('video-result-text').innerHTML = '✅ 视频上传任务已完成，请手动确认上传结果';
+          }
+        } catch(e) {}
+      }, 5000);
+    } else {
+      addLog('❌ '+d.message,'error');
+    }
+  }catch(e){addLog('❌ 请求失败: '+e.message,'error');}
+  finally{
+    if(eventSource){eventSource.close();eventSource=null;}
+    $('btn-start').disabled=false;
+    $('btn-stop').disabled=true;
+    checkBrowserStatus();
+  }
+});
+
+$('btn-stop').addEventListener('click',async()=>{
+  $('btn-start').disabled=false;
+  $('btn-stop').disabled=true;
+  addLog('■ 任务已停止','warning');
+  try{await fetch('/api/stop_task',{method:'POST'});}catch(e){}
+});
+
+$('btn-clear-log').addEventListener('click',clearLog);
+$('btn-clear-all-log').addEventListener('click',()=>{$('log-container-all').innerHTML='<div class="log-line info"><span class="t">[--:--:--]</span>✨ 日志已清除</div>';});
+
+$('btn-order-start').addEventListener('click',async()=>{
+  const url=$('order-url').value.trim();
+  const sku=$('order-sku').value.trim();
+  if(!url){addLog('❌ 请填写商品链接','error');return;}
+  if(!sku){addLog('❌ 请填写SKU名称','error');return;}
+  $('btn-order-start').disabled=true;
+  $('btn-order-stop').disabled=false;
+  $('order-status').textContent='● 运行中';
+  $('order-result').style.display='none';
+  addLog('⏰ 启动拍单: '+sku+' x'+$('order-qty').value+' 每'+$('order-interval').value+'分钟','success');
+  try{
+    const r=await fetch('/api/start_order_task',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,sku,qty:parseInt($('order-qty').value),interval:parseInt($('order-interval').value),port:$('order-port').value})});
+    const d=await r.json();
+    if(d.success){
+      addLog('✅ '+d.message,'success');
+      $('order-result').style.display='block';
+      $('order-result-text').innerHTML='✅ 已在端口 <b>'+$('order-port').value+'</b> 创建拍单任务：<b>'+sku+'</b> × '+$('order-qty').value+'件，每'+$('order-interval').value+'分钟执行';
+    } else {
+      addLog('❌ '+d.message,'error');
+    }
+  }catch(e){addLog('❌ 请求失败: '+e.message,'error');}
+  finally{
+    $('btn-order-start').disabled=false;
+    $('btn-order-stop').disabled=true;
+  }
+});
+
+$('btn-order-stop').addEventListener('click',async()=>{
+  $('btn-order-start').disabled=false;
+  $('btn-order-stop').disabled=true;
+  $('order-status').textContent='● 已停止';
+  addLog('■ 拍单任务已停止','warning');
+  try{await fetch('/api/stop_order_task',{method:'POST'});}catch(e){}
+});
+
+$('btn-review-start').addEventListener('click',async()=>{
+  const port=$('review-port').value;
+  const feishuUrl=$('review-feishu-url').value.trim();
+  if(!feishuUrl){addLog('❌ 请填写飞书表格链接','error');return;}
+  $('btn-review-start').disabled=true;
+  $('btn-review-stop').disabled=false;
+  $('review-status').textContent='● 运行中';
+  $('review-result').style.display='none';
+  addLog('⚠️ 启动差评举报 端口:'+port,'success');
+  try{
+    const r=await fetch('/api/start_review_task',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({port,feishuUrl})});
+    const d=await r.json();
+    if(d.success){
+      addLog('✅ '+d.message,'success');
+      $('review-result').style.display='block';
+      $('review-result-text').innerHTML='✅ 已启动端口 <b>'+port+'</b> 的差评举报任务';
+    } else {
+      addLog('❌ '+d.message,'error');
+    }
+  }catch(e){addLog('❌ 请求失败: '+e.message,'error');}
+  finally{
+    $('btn-review-start').disabled=false;
+    $('btn-review-stop').disabled=true;
+    $('review-status').textContent='● 已停止';
+  }
+});
+
+$('btn-review-stop').addEventListener('click',async()=>{
+  $('btn-review-start').disabled=false;
+  $('btn-review-stop').disabled=true;
+  $('review-status').textContent='● 已停止';
+  addLog('■ 差评举报任务已停止','warning');
+  try{await fetch('/api/stop_review_task',{method:'POST'});}catch(e){}
+});
+
+// ===== 审核任务 =====
+$('btn-audit-start').addEventListener('click',async()=>{
+  const port=$('audit-port').value;
+  const feishuUrl=$('audit-feishu-url').value.trim();
+  if(!feishuUrl){addLog('❌ 请填写飞书表格链接','error');return;}
+  $('btn-audit-start').disabled=true;
+  $('btn-audit-stop').disabled=false;
+  $('audit-status').textContent='● 运行中';
+  $('audit-result').style.display='none';
+  $('audit-result-text').innerHTML='⏳ 执行中，请稍候...';
+  addLog('⚠️ 启动评价审核 端口:'+port,'success');
+  try{
+    const r=await fetch('/api/start_audit_task',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({port,feishuUrl})});
+    const d=await r.json();
+    if(d.success){
+      addLog('✅ '+d.message,'success');
+      $('audit-result').style.display='block';
+      $('audit-result-text').innerHTML='✅ 已启动端口 <b>'+port+'</b> 的评价审核任务';
+      startAuditPoll();
+    } else {
+      addLog('❌ '+d.message,'error');
+      $('audit-result').style.display='block';
+      $('audit-result-text').innerHTML='<span style="color:var(--red)">❌ '+d.message+'</span>';
+    }
+  }catch(e){addLog('❌ 请求失败: '+e.message,'error');}
+  finally{
+    $('btn-audit-start').disabled=false;
+    $('btn-audit-stop').disabled=true;
+    $('audit-status').textContent='● 已停止';
+  }
+});
+
+$('btn-audit-stop').addEventListener('click',async()=>{
+  $('btn-audit-start').disabled=false;
+  $('btn-audit-stop').disabled=true;
+  $('audit-status').textContent='● 已停止';
+  $('audit-result-text').innerHTML='<span style="color:var(--yellow)">■ 已停止</span>';
+  addLog('■ 评价审核任务已停止','warning');
+  stopAuditPoll();
+  try{await fetch('/api/stop_audit_task',{method:'POST'});}catch(e){}
+});
+
+// ===== 评价抓取任务 =====
+$('btn-eval-start').addEventListener('click',async()=>{
+  const port=$('eval-port').value;
+  const goodsId=$('eval-goods-id').value.trim();
+  const feishuUrl=$('eval-feishu-url').value.trim();
+  if(!goodsId){addLog('❌ 请填写商品ID','error');return;}
+  // 收集选中星级
+  const selectedStars = Array.from(document.querySelectorAll('.eval-star-cb:checked')).map(o=>o.value);
+  if(selectedStars.length===0){addLog('❌ 请至少选择一个星级','error');return;}
+
+  $('btn-eval-start').disabled=true;
+  $('btn-eval-stop').disabled=false;
+  $('eval-status').textContent='● 运行中';
+  $('eval-result').style.display='none';
+  addLog('========================================','info');
+  addLog('📥 启动评价抓取 端口:'+port,'info');
+  addLog('   商品ID: '+goodsId,'info');
+  addLog('   星级: '+selectedStars.map(s=>s+'星').join(','),'info');
+  addLog('   飞书: '+(feishuUrl||'（不写入）'),'info');
+  addLog('========================================','info');
+
+  try{
+    const r=await fetch('/api/start_eval_task',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({port,goodsId,stars:selectedStars,feishuUrl})
+    });
+    const d=await r.json();
+    if(d.success){
+      addLog('✅ '+d.message,'success');
+      $('eval-result').style.display='block';
+      $('eval-result-text').innerHTML='✅ 已启动端口 <b>'+port+'</b> 的评价抓取任务<br>商品ID: <b>'+goodsId+'</b> | 星级: <b>'+selectedStars.join(',')+'星</b>';
+      startEvalPoll();
+    } else {
+      addLog('❌ '+d.message,'error');
+    }
+  }catch(e){addLog('❌ 请求失败: '+e.message,'error');}
+  finally{
+    $('btn-eval-start').disabled=false;
+    $('btn-eval-stop').disabled=true;
+    $('eval-status').textContent='● 已停止';
+  }
+});
+
+$('btn-eval-stop').addEventListener('click',async()=>{
+  $('btn-eval-start').disabled=false;
+  $('btn-eval-stop').disabled=true;
+  $('eval-status').textContent='● 已停止';
+  addLog('■ 评价抓取任务已停止','warning');
+  stopEvalPoll();
+  try{await fetch('/api/stop_eval_task',{method:'POST'});}catch(e){}
+});
+
+// 轮询评价抓取结果
+let evalPollTimer=null;
+function startEvalPoll(){
+  stopEvalPoll();
+  evalPollTimer=setInterval(async()=>{
+    try{
+      const r=await fetch('/api/eval_result');
+      const d=await r.json();
+      if(d.done){
+        stopEvalPoll();
+        $('btn-eval-start').disabled=false;
+        $('btn-eval-stop').disabled=true;
+        $('eval-status').textContent='● 已完成';
+        if(d.total>0){
+          $('eval-result-text').innerHTML='<span style="color:var(--green)">✅ </span>抓取完成，共 <b>'+d.total+'</b> 条评价'+(d.feishuUrl?'<br>已写入飞书: <a href="'+d.feishuUrl+'" target="_blank" style="color:var(--cyan)">'+d.feishuUrl+'</a>':'');
+          addLog('✅ 抓取完成：'+d.total+'条评价','success');
+        } else {
+          $('eval-result-text').innerHTML='<span style="color:var(--yellow)">⚠️ </span>未抓取到数据，请检查商品ID和筛选条件';
+          addLog('⚠️ 未抓取到数据','warning');
+        }
+      }
+    }catch(e){}
+  },3000);
+}
+function stopEvalPoll(){if(evalPollTimer){clearInterval(evalPollTimer);evalPollTimer=null;}}
+
+switchPage('home');
+let auditPollTimer=null;
+function startAuditPoll(){
+  stopAuditPoll();
+  auditPollTimer=setInterval(async()=>{
+    try{
+      const r=await fetch('/api/audit_result');
+      const d=await r.json();
+      if(d.done){
+        stopAuditPoll();
+        $('btn-audit-start').disabled=false;
+        $('btn-audit-stop').disabled=true;
+        $('audit-status').textContent='● 已完成';
+        const s=d.store||'',t=d.total||0;
+        if(t>0){
+          $('audit-result-text').innerHTML='<span style="color:var(--green)">✅ </span><b>'+s+'</b> 成功审核 <b>'+t+'</b> 条视频';
+          addLog('📊 审核完成：'+s+' 审核'+t+'条','success');
+        } else {
+          $('audit-result-text').innerHTML='<span style="color:var(--green)">✅ </span><b>'+s+'</b> 无视频需审核';
+          addLog('📊 审核完成：'+s+' 无视频','success');
+        }
+      }
+    }catch(e){}
+  },3000);
+}
+function stopAuditPoll(){if(auditPollTimer){clearInterval(auditPollTimer);auditPollTimer=null;}}
+
+switchPage('home');
+checkBrowserStatus();
+setInterval(checkBrowserStatus,5000);
+</script>
+</body>
+</html>
