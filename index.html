@@ -24,11 +24,12 @@
 body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow: hidden; }
     .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-w); background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 12px 0; z-index: 200; }
     .sidebar-logo { width: 42px; height: 42px; background: linear-gradient(135deg, var(--cyan), var(--purple)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; margin-bottom: 18px; box-shadow: 0 0 12px rgba(0,240,255,0.3); }
-    .nav-item { width: 50px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border-radius: 10px; margin-bottom: 3px; transition: all 0.2s; position: relative; color: var(--text-dim); }
+    .nav-item { width: 58px; height: 58px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border-radius: 10px; margin-bottom: 2px; transition: all 0.2s; position: relative; color: var(--text-dim); }
     .nav-item:hover { background: rgba(0,240,255,0.08); color: var(--text); }
     .nav-item.active { background: rgba(0,240,255,0.12); color: var(--cyan); }
-    .nav-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 22px; background: var(--cyan); border-radius: 0 2px 2px 0; box-shadow: 0 0 8px var(--cyan); }
-    .nav-label { font-size: 8px; margin-top: 1px; }
+    .nav-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 26px; background: var(--cyan); border-radius: 0 2px 2px 0; box-shadow: 0 0 8px var(--cyan); }
+    .nav-item > span:first-child { font-size: 20px; line-height: 1; }
+    .nav-label { font-size: 10px; margin-top: 3px; font-weight: 500; }
     .sidebar-bottom { margin-top: auto; padding-bottom: 6px; }
     .main { margin-left: var(--sidebar-w); height: 100vh; display: flex; flex-direction: column; }
     .header-bar { height: 44px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 12px; flex-shrink: 0; }
