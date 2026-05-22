@@ -391,6 +391,22 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
           <span id="eval-status" style="font-size:10px;color:var(--text-dim);margin-left:8px;line-height:34px"></span>
         </div>
       </div>
+      <!-- 历史数据库查询 -->
+      <div class="card" style="margin-top:10px"><div class="card-title">📂 历史记录</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0">
+          <input type="text" id="eval-q-goods" placeholder="商品ID" style="width:130px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px">
+          <div style="display:flex;gap:4px">
+            <label style="display:flex;align-items:center;gap:3px;cursor:pointer;font-size:11px;color:var(--text-dim)"><input type="checkbox" class="eval-q-star" value="1" checked>⭐1</label>
+            <label style="display:flex;align-items:center;gap:3px;cursor:pointer;font-size:11px;color:var(--text-dim)"><input type="checkbox" class="eval-q-star" value="2" checked>⭐2</label>
+            <label style="display:flex;align-items:center;gap:3px;cursor:pointer;font-size:11px;color:var(--text-dim)"><input type="checkbox" class="eval-q-star" value="3" checked>⭐3</label>
+            <label style="display:flex;align-items:center;gap:3px;cursor:pointer;font-size:11px;color:var(--text-dim)"><input type="checkbox" class="eval-q-star" value="4">⭐4</label>
+            <label style="display:flex;align-items:center;gap:3px;cursor:pointer;font-size:11px;color:var(--text-dim)"><input type="checkbox" class="eval-q-star" value="5">⭐5</label>
+          </div>
+          <button class="btn btn-secondary" id="btn-eval-query" style="padding:5px 14px;font-size:12px">🔍 查询</button>
+          <span id="eval-q-count" style="font-size:11px;color:var(--text-dim);margin-left:4px"></span>
+        </div>
+        <div id="eval-q-result" style="max-height:280px;overflow-y:auto;font-size:11px;line-height:1.8;color:var(--text)"></div>
+      </div>
       <div class="card"><div class="card-title">执行日志</div>
         <div id="log-container-eval"><div class="log-line info"><span class="t">[--:--:--]</span>✨ 评价抓取模块已就绪</div></div>
       </div>
@@ -832,6 +848,35 @@ function startEvalPoll(){
   },3000);
 }
 function stopEvalPoll(){if(evalPollTimer){clearInterval(evalPollTimer);evalPollTimer=null;}}
+
+// ===== 历史记录查询 =====
+$('btn-eval-query').addEventListener('click',async()=>{
+  const goodsId=$('eval-q-goods').value.trim();
+  const stars=Array.from(document.querySelectorAll('.eval-q-star:checked')).map(o=>o.value).join(',');
+  const url='/api/eval_query'+(goodsId||stars?'?':'/')+(goodsId?'goods_id='+encodeURIComponent(goodsId):'')+(goodsId&&stars?'&':'')+(stars?'stars='+stars:'');
+  try{
+    const r=await fetch(url);
+    const d=await r.json();
+    $('eval-q-count').textContent='共 '+d.total+' 条';
+    if(d.rows.length===0){
+      $('eval-q-result').innerHTML='<div style="color:var(--text-dim);padding:8px">暂无数据</div>';
+      return;
+    }
+    const stars_p={1:'⭐',2:'⭐⭐',3:'⭐⭐⭐',4:'⭐⭐⭐⭐',5:'⭐⭐⭐⭐⭐'};
+    let html='<table style="width:100%;border-collapse:collapse"><tr style="background:var(--bg2)"><td style="padding:3px 6px;font-weight:600">星级</td><td style="padding:3px 6px;font-weight:600">评价内容</td><td style="padding:3px 6px;font-weight:600">订单号</td><td style="padding:3px 6px;font-weight:600">时间</td></tr>';
+    d.rows.forEach(r=>{
+      const content=r.content.length>40?r.content.slice(0,40)+'...':r.content;
+      html+='<tr style="border-bottom:1px solid var(--border)"><td style="padding:3px 6px">'+stars_p[r.star]+'</td><td style="padding:3px 6px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+content+'</td><td style="padding:3px 6px;color:var(--text-dim)">'+r.order_no+'</td><td style="padding:3px 6px;color:var(--text-dim);font-size:10px">'+r.fetched_at+'</td></tr>';
+    });
+    html+='</table>';
+    $('eval-q-result').innerHTML=html;
+  }catch(e){
+    $('eval-q-result').innerHTML='<div style="color:var(--red);padding:8px">查询失败: '+e.message+'</div>';
+  }
+});
+
+// 默认加载全部历史
+$('btn-eval-query').click();
 
 switchPage('home');
 let auditPollTimer=null;
