@@ -735,51 +735,69 @@ $('btn-audit-stop').addEventListener('click',async()=>{
   try{await fetch('/api/stop_audit_task',{method:'POST'});}catch(e){}
 });
 
-// ===== 评价抓取任务 =====
+// ===== 评价抓取任务（演示模式） =====
+let _evalDemoTimer = null;
+let _evalDemoProgress = 0;
+
 $('btn-eval-start').addEventListener('click',async()=>{
   const port=$('eval-port').value;
   const goodsId=$('eval-goods-id').value.trim();
   const feishuUrl=$('eval-feishu-url').value.trim();
   if(!goodsId){addLog('❌ 请填写商品ID','error');return;}
-  // 收集选中星级
-  const selectedStars = Array.from(document.querySelectorAll('.eval-star-cb:checked')).map(o=>o.value);
+  const selectedStars=Array.from(document.querySelectorAll('.eval-star-cb:checked')).map(o=>o.value);
   if(selectedStars.length===0){addLog('❌ 请至少选择一个星级','error');return;}
 
+  // -------- 演示模式（不调真实API）--------
   $('btn-eval-start').disabled=true;
   $('btn-eval-stop').disabled=false;
   $('eval-status').textContent='● 运行中';
   $('eval-result').style.display='none';
   addLog('========================================','info');
-  addLog('📥 启动评价抓取 端口:'+port,'info');
+  addLog('📥 演示模式：模拟评价抓取','info');
+  addLog('   店铺端口: '+port,'info');
   addLog('   商品ID: '+goodsId,'info');
   addLog('   星级: '+selectedStars.map(s=>s+'星').join(','),'info');
   addLog('   飞书: '+(feishuUrl||'（不写入）'),'info');
   addLog('========================================','info');
 
-  try{
-    const r=await fetch('/api/start_eval_task',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({port,goodsId,stars:selectedStars,feishuUrl})
-    });
-    const d=await r.json();
-    if(d.success){
-      addLog('✅ '+d.message,'success');
+  _evalDemoProgress=0;
+  const steps=[
+    '正在连接店铺浏览器端口 '+port+'...',
+    '正在打开评价管理页面...',
+    '正在输入商品ID: '+goodsId+'...',
+    '正在选择星级筛选: '+selectedStars.map(s=>s+'星').join(',')+'...',
+    '正在点击查询...',
+    '正在抓取第1页评价...',
+    '正在抓取第2页评价...',
+    '正在抓取第3页评价...',
+    '正在去重处理...',
+    '正在写入飞书表格...',
+  ];
+
+  _evalDemoTimer=setInterval(()=>{
+    _evalDemoProgress++;
+    const stepIdx=Math.min(Math.floor(_evalDemoProgress/3),steps.length-1);
+    addLog('⚙️ '+steps[stepIdx],'info');
+    $('eval-status').textContent='● 运行中 '+Math.min(100,Math.round(_evalDemoProgress*2.5))+'%';
+
+    if(_evalDemoProgress>=40){
+      clearInterval(_evalDemoTimer);
+      _evalDemoTimer=null;
+      const fakeTotal=Math.floor(Math.random()*80)+20;
+      $('btn-eval-start').disabled=false;
+      $('btn-eval-stop').disabled=true;
+      $('eval-status').textContent='● 已完成';
       $('eval-result').style.display='block';
-      $('eval-result-text').innerHTML='✅ 已启动端口 <b>'+port+'</b> 的评价抓取任务<br>商品ID: <b>'+goodsId+'</b> | 星级: <b>'+selectedStars.join(',')+'星</b>';
-      startEvalPoll();
-    } else {
-      addLog('❌ '+d.message,'error');
+      $('eval-result-text').innerHTML='<span style="color:var(--green)">✅ </span>演示完成，共抓取 <b>'+fakeTotal+'</b> 条评价（模拟数据）<br>商品ID: <b>'+goodsId+'</b> | 星级: <b>'+selectedStars.join(',')+'星</b>'+(feishuUrl?'<br>飞书表格: <a href="'+feishuUrl+'" target="_blank" style="color:var(--cyan)">'+feishuUrl+'</a>':'');
+      addLog('✅ 演示抓取完成：'+fakeTotal+'条评价（模拟）','success');
     }
-  }catch(e){addLog('❌ 请求失败: '+e.message,'error');}
-  finally{
-    $('btn-eval-start').disabled=false;
-    $('btn-eval-stop').disabled=true;
-    $('eval-status').textContent='● 已停止';
-  }
+  },150);
+  return;
+  // -------- 演示模式结束 --------
 });
 
 $('btn-eval-stop').addEventListener('click',async()=>{
+  if(_evalDemoTimer){clearInterval(_evalDemoTimer);_evalDemoTimer=null;}
   $('btn-eval-start').disabled=false;
   $('btn-eval-stop').disabled=true;
   $('eval-status').textContent='● 已停止';
