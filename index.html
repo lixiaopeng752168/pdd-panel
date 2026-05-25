@@ -123,6 +123,7 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
   <div class="nav-item" data-page="rank"><span>📸</span><span class="nav-label">榜单</span></div>
   <div class="nav-item" data-page="tools"><span>🔗</span><span class="nav-label">上传</span></div>
   <div class="nav-item" data-page="ai"><span>🎨</span><span class="nav-label">AI</span></div>
+  <div class="nav-item" data-page="activity"><span>🏷️</span><span class="nav-label">活动</span></div>
   <div class="sidebar-bottom"><div class="nav-item" data-page="logs"><span>📋</span><span class="nav-label">日志</span></div></div>
 </nav>
 <div class="main">
@@ -153,6 +154,7 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
           <div class="quick-item" onclick="switchPage('rank')"><span class="icon">📸</span><div><div class="name">榜单截图</div><div class="desc">榜单页面截图上传</div></div></div>
           <div class="quick-item" onclick="switchPage('tools')"><span class="icon">🔗</span><div><div class="name">链接上传</div><div class="desc">商品链接+图片上传</div></div></div>
           <div class="quick-item" onclick="switchPage('ai')"><span class="icon">🎨</span><div><div class="name">AI主图生成</div><div class="desc">提示词生成主图</div></div></div>
+          <div class="quick-item" onclick="switchPage('activity')"><span class="icon">🏷️</span><div><div class="name">活动报名</div><div class="desc">大促/秒杀/多人团</div></div></div>
         </div>
       </div>
       <div class="card"><div class="card-title">端口状态</div>
@@ -521,6 +523,42 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
       </div>
     </div>
 
+    <!-- 拼多多活动报名 -->
+    <div class="page" id="page-activity">
+      <div class="card"><div class="card-title">🏷️ 拼多多活动报名</div>
+        <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">报名参与拼多多各类营销活动，获取更多流量曝光。</p>
+        <div class="form-row">
+          <div class="form-group"><label>店铺</label>
+            <select id="activity-store"><option value="">请选择店铺</option>
+              <option value="9666">9666 - KONKA康佳健康电器</option>
+              <option value="9667">9667 - 康佳环境电器</option>
+              <option value="9668">9668 - 康佳冷暖电器</option>
+              <option value="9669">9669 - 銮明星</option>
+              <option value="9670">9670 - 銮明星官方旗舰店</option>
+              <option value="9671">9671 - 和草集官方旗舰店</option>
+              <option value="9672">9672 - 金正NINTAUS官方旗舰店</option>
+              <option value="9674">9674 - 茵佑旗舰店</option>
+              <option value="9675">9675 - 钻石取暖器旗舰店</option>
+            </select>
+          </div>
+          <div class="form-group"><label>商品ID</label>
+            <input type="text" id="activity-goods-id" placeholder="如：1234567890">
+          </div>
+        </div>
+        <div class="form-group"><label>活动类型</label>
+          <select id="activity-type"><option value="">请选择活动类型</option>
+            <option value="大促">大促</option>
+            <option value="免审描述">免审描述</option>
+            <option value="584秒杀">584秒杀</option>
+            <option value="千万爆款团">千万爆款团</option>
+            <option value="多人团">多人团</option>
+            <option value="百亿补贴">百亿补贴</option>
+          </select>
+        </div>
+        <div class="btn-group"><button class="btn btn-primary" disabled>📋 立即提报</button></div>
+      </div>
+    </div>
+
     <!-- 价格监控 -->
     <div class="page" id="page-price">
       <div class="card"><div class="card-title">价格检查</div>
@@ -540,7 +578,7 @@ const pages = document.querySelectorAll('.page');
 const navItems = document.querySelectorAll('.nav-item');
 // Logo 点击回首页
 document.querySelector('.sidebar-logo').addEventListener('click', () => switchPage('home'));
-const pageTitles = {home:'🏠 首页',browser:'🌐 浏览器控制',video:'📹 视频批量发布',order:'⏰ 定时拍单',report:'📊 数据播报',review:'⚠️ 差评处理',audit:'🔍 视频审核',eval:'📝 评价抓取',price:'💰 价格监控',rank:'📸 榜单截图',tools:'🔗 链接上传',ai:'🎨 AI主图生成',logs:'📋 系统日志'};
+const pageTitles = {home:'🏠 首页',browser:'🌐 浏览器控制',video:'📹 视频批量发布',order:'⏰ 定时拍单',report:'📊 数据播报',review:'⚠️ 差评处理',audit:'🔍 视频审核',eval:'📝 评价抓取',price:'💰 价格监控',rank:'📸 榜单截图',tools:'🔗 链接上传',ai:'🎨 AI主图生成',activity:'🏷️ 活动报名',logs:'📋 系统日志'};
 
 function switchPage(name) {
   pages.forEach(p => p.classList.remove('active'));
