@@ -114,6 +114,7 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
   <div class="nav-item" data-page="audit"><span>🔍</span><span class="nav-label">审核</span></div>
   <div class="nav-item" data-page="eval"><span>📝</span><span class="nav-label">评价</span></div>
   <div class="nav-item" data-page="price"><span>💰</span><span class="nav-label">价格</span></div>
+  <div class="nav-item" data-page="rank"><span>📸</span><span class="nav-label">榜单</span></div>
   <div class="nav-item" data-page="tools"><span>🧰</span><span class="nav-label">工具</span></div>
   <div class="sidebar-bottom"><div class="nav-item" data-page="logs"><span>📋</span><span class="nav-label">日志</span></div></div>
 </nav>
@@ -141,7 +142,8 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
           <div class="quick-item" onclick="switchPage('review')"><span class="icon">⚠️</span><div><div class="name">差评处理</div><div class="desc">举报+负面屏蔽</div></div></div>
           <div class="quick-item" onclick="switchPage('audit')"><span class="icon">🔍</span><div><div class="name">视频审核</div><div class="desc">审核状态查询</div></div></div>
           <div class="quick-item" onclick="switchPage('eval')"><span class="icon">📝</span><div><div class="name">评价抓取</div><div class="desc">评价数据→飞书</div></div></div>
-          <div class="quick-item" onclick="switchPage('price')"><span class="icon">💰</span><div><div class="name">价格监控</div><div class="desc">价格检查+榜单截图</div></div></div>
+          <div class="quick-item" onclick="switchPage('price')"><span class="icon">💰</span><div><div class="name">价格监控</div><div class="desc">价格检查</div></div></div>
+          <div class="quick-item" onclick="switchPage('rank')"><span class="icon">📸</span><div><div class="name">榜单截图</div><div class="desc">榜单页面截图上传</div></div></div>
         </div>
       </div>
       <div class="card"><div class="card-title">端口状态</div>
@@ -398,69 +400,67 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
         <div id="eval-result-text" style="font-size:13px;line-height:1.7"></div>
       </div>
     </div>
+    <!-- 榜单截图 -->
+    <div class="page" id="page-rank">
+      <div class="card"><div class="card-title">📸 榜单截图</div>
+        <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">选择店铺和榜单类型，截取拼多多榜单页面并上传至飞书表格。</p>
+
+        <div style="margin-bottom:12px">
+          <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">店铺</label>
+          <select id="rank-port" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg-secondary);color:var(--text)">
+            <option value="9666">9666-KONKA康佳健康电器旗舰店</option>
+            <option value="9667">9667-康佳环境电器旗舰店</option>
+            <option value="9668">9668-康佳小熊专卖店</option>
+            <option value="9669">9669-康佳精品电器专营店</option>
+            <option value="9670">9670-康佳诚品专卖店</option>
+            <option value="9671">9671-康佳皓康专卖店</option>
+            <option value="9672">9672-康佳白时尚专卖店</option>
+            <option value="9674">9674-茵佑旗舰店</option>
+            <option value="9675">9675-钻石取暖器旗舰店</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom:12px">
+          <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">榜单名称</label>
+          <select id="rank-sheet" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg-secondary);color:var(--text)">
+            <option value="Sheet1">挂烫机</option>
+            <option value="Sheet2">车载吸尘器</option>
+            <option value="Sheet3">无线除螨仪</option>
+            <option value="Sheet4">有线吸尘器</option>
+            <option value="Sheet5">吸拖一体</option>
+            <option value="Sheet6">品牌眼部按摩器</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom:12px">
+          <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">飞书表格链接</label>
+          <input type="text" id="rank-feishu-url" placeholder="https://feishu.cn/sheets/xxx" value="" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg-secondary);color:var(--text)">
+        </div>
+
+        <div class="btn-group" style="margin-bottom:12px">
+          <button class="btn btn-primary" id="btn-rank-start">▶ 启动截图</button>
+          <button class="btn btn-secondary" id="btn-rank-stop" disabled>■ 停止</button>
+        </div>
+        <div id="rank-status" style="font-size:11px;color:var(--text-dim);margin-bottom:8px;min-height:18px"></div>
+        <div id="rank-result" style="display:none;margin-top:8px"><div id="rank-result-text"></div></div>
+      </div>
+
+      <div class="card" style="margin-top:4px">
+        <div class="card-title" style="justify-content:space-between">
+          <span>执行日志</span>
+          <button class="btn" style="background:#334155;padding:4px 10px;font-size:10px" id="btn-clear-log-rank">🗑 清除</button>
+        </div>
+        <div id="log-container-rank"><div class="log-line info"><span class="t">[--:--:--]</span>✨ 榜单截图就绪</div></div>
+      </div>
+    </div>
+
     <!-- 价格监控 -->
     <div class="page" id="page-price">
       <div class="card"><div class="card-title">价格检查</div>
         <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">监控商品价格变化，发现低价乱价行为。</p>
         <div class="btn-group"><button class="btn btn-primary" disabled>🔍 立即检查</button></div>
       </div>
-      <div class="card"><div class="card-title">榜单截图</div>
-        <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">定期截取畅销榜单，监控竞品排名变化。</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-          <div class="form-group"><label>选择店铺</label>
-            <select id="rank-port">
-              <option value="9666">KONKA康佳健康电器旗舰店</option>
-              <option value="9667">康佳环境电器旗舰店</option>
-              <option value="9668">康佳冷暖电器旗舰店</option>
-              <option value="9669">康佳家居清洁旗舰店</option>
-              <option value="9670">海尔岑甫专卖店</option>
-              <option value="9671">和草集官方旗舰店</option>
-              <option value="9672">金正NINTAUS官方旗舰店</option>
-              <option value="9674">茵佑旗舰店</option>
-              <option value="9675">钻石取暖器旗舰店</option>
-            </select>
-          </div>
-          <div class="form-group"><label>榜单名称</label>
-            <select id="rank-sheet">
-              <option value="Sheet1">Sheet1 - 挂烫机畅销榜</option>
-              <option value="Sheet2">Sheet2 - 大功率车载吸尘器畅销榜</option>
-              <option value="Sheet3">Sheet3 - 无线除螨仪畅销榜</option>
-              <option value="Sheet4">Sheet4 - 有线吸尘器畅销榜</option>
-              <option value="Sheet5">Sheet5 - 吸拖一体吸尘器畅销榜</option>
-              <option value="Sheet6">Sheet6 - 品牌眼部按摩器畅销榜</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group"><label>飞书表格链接</label>
-          <input type="text" id="rank-feishu-url" placeholder="https://bys.vika.cn/share/xxxxx" style="width:100%;box-sizing:border-box">
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
-          <button class="btn btn-primary" id="btn-rank-start">📸 开始截图</button>
-          <button class="btn btn-secondary" id="btn-rank-stop" disabled>■ 停止</button>
-          <span id="rank-status" style="font-size:12px;color:var(--text-dim);margin-left:4px">● 待机</span>
-        </div>
-        <div class="result-report" id="rank-result" style="display:none;margin-top:8px;padding:10px 12px;background:#0f172a;border-radius:8px;border:1px solid #1e3a5f">
-          <div id="rank-result-text" style="font-size:13px;line-height:1.7"></div>
-        </div>
-      </div>
-    </div>
-    <!-- 工具箱 -->
-    <div class="page" id="page-tools">
-      <div class="module-grid">
-        <div class="dev-card"><div class="icon">📹</div><h3>视频审核</h3><p>监控审核状态</p></div>
-        <div class="dev-card"><div class="icon">📦</div><h3>库存检查</h3><p>批量检查库存</p></div>
-        <div class="dev-card"><div class="icon">🎯</div><h3>达人投跑</h3><p>管理达人推广</p></div>
-        <div class="dev-card"><div class="icon">📝</div><h3>评论管理</h3><p>批量回复评论</p></div>
-        <div class="dev-card"><div class="icon">🤖</div><h3>智能客服</h3><p>自动接待咨询</p></div>
-        <div class="dev-card"><div class="icon">🔄</div><h3>批量改价</h3><p>快速调整价格</p></div>
-      </div>
-      <div class="result-report" id="review-result" style="display:none;margin-top:12px;padding:12px 14px;background:#0f172a;border-radius:8px;border:1px solid #1e3a5f">
-        <div id="review-result-text" style="font-size:13px;line-height:1.7"></div>
-      </div>
-    </div>
-    <!-- 日志 -->
-    <div class="page" id="page-logs">
-      <div class="card"><div class="card-title">系统日志</div>
+    <div class="card"><div class="card-title">系统日志</div>
         <div style="margin-bottom:8px"><button class="btn" style="background:#334155;font-size:10px;padding:5px 12px" id="btn-clear-all-log">🗑 清除日志</button></div>
         <div id="log-container-all"><div class="log-line info"><span class="t">[--:--:--]</span>✨ 系统日志已就绪</div></div>
       </div>
