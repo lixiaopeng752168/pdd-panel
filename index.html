@@ -121,7 +121,8 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
   <div class="nav-item" data-page="eval"><span>📝</span><span class="nav-label">评价</span></div>
   <div class="nav-item" data-page="price"><span>💰</span><span class="nav-label">价格</span></div>
   <div class="nav-item" data-page="rank"><span>📸</span><span class="nav-label">榜单</span></div>
-  <div class="nav-item" data-page="tools"><span>🧰</span><span class="nav-label">工具</span></div>
+  <div class="nav-item" data-page="tools"><span>🔗</span><span class="nav-label">上传</span></div>
+  <div class="nav-item" data-page="ai"><span>🎨</span><span class="nav-label">AI</span></div>
   <div class="sidebar-bottom"><div class="nav-item" data-page="logs"><span>📋</span><span class="nav-label">日志</span></div></div>
 </nav>
 <div class="main">
@@ -150,7 +151,8 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
           <div class="quick-item" onclick="switchPage('eval')"><span class="icon">📝</span><div><div class="name">评价抓取</div><div class="desc">评价数据→飞书</div></div></div>
           <div class="quick-item" onclick="switchPage('price')"><span class="icon">💰</span><div><div class="name">价格监控</div><div class="desc">价格检查</div></div></div>
           <div class="quick-item" onclick="switchPage('rank')"><span class="icon">📸</span><div><div class="name">榜单截图</div><div class="desc">榜单页面截图上传</div></div></div>
-          <div class="quick-item" onclick="switchPage('tools')"><span class="icon">🧰</span><div><div class="name">工具箱</div><div class="desc">链接上传+AI主图</div></div></div>
+          <div class="quick-item" onclick="switchPage('tools')"><span class="icon">🔗</span><div><div class="name">链接上传</div><div class="desc">商品链接+图片上传</div></div></div>
+          <div class="quick-item" onclick="switchPage('ai')"><span class="icon">🎨</span><div><div class="name">AI主图生成</div><div class="desc">提示词生成主图</div></div></div>
         </div>
       </div>
       <div class="card"><div class="card-title">端口状态</div>
@@ -464,7 +466,7 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
       </div>
     </div>
 
-    <!-- 工具箱 -->
+    <!-- 链接上传 -->
     <div class="page" id="page-tools">
       <div class="card"><div class="card-title">🔗 链接上传</div>
         <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">上传商品链接及图片素材到指定店铺。</p>
@@ -499,7 +501,10 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
           <input type="text" id="upload-price" placeholder="如：99.00">
         </div>
       </div>
+    </div>
 
+    <!-- AI主图生成 -->
+    <div class="page" id="page-ai">
       <div class="card"><div class="card-title">🎨 AI主图生成</div>
         <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">输入产品名称和提示词，AI生成主图。</p>
         <div class="form-group"><label>产品名称</label>
@@ -535,7 +540,7 @@ const pages = document.querySelectorAll('.page');
 const navItems = document.querySelectorAll('.nav-item');
 // Logo 点击回首页
 document.querySelector('.sidebar-logo').addEventListener('click', () => switchPage('home'));
-const pageTitles = {home:'🏠 首页',browser:'🌐 浏览器控制',video:'📹 视频批量发布',order:'⏰ 定时拍单',report:'📊 数据播报',review:'⚠️ 差评处理',audit:'🔍 视频审核',eval:'📝 评价抓取',price:'💰 价格监控',rank:'📸 榜单截图',tools:'🧰 工具箱',logs:'📋 系统日志'};
+const pageTitles = {home:'🏠 首页',browser:'🌐 浏览器控制',video:'📹 视频批量发布',order:'⏰ 定时拍单',report:'📊 数据播报',review:'⚠️ 差评处理',audit:'🔍 视频审核',eval:'📝 评价抓取',price:'💰 价格监控',rank:'📸 榜单截图',tools:'🔗 链接上传',ai:'🎨 AI主图生成',logs:'📋 系统日志'};
 
 function switchPage(name) {
   pages.forEach(p => p.classList.remove('active'));
