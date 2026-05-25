@@ -150,6 +150,7 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
           <div class="quick-item" onclick="switchPage('eval')"><span class="icon">📝</span><div><div class="name">评价抓取</div><div class="desc">评价数据→飞书</div></div></div>
           <div class="quick-item" onclick="switchPage('price')"><span class="icon">💰</span><div><div class="name">价格监控</div><div class="desc">价格检查</div></div></div>
           <div class="quick-item" onclick="switchPage('rank')"><span class="icon">📸</span><div><div class="name">榜单截图</div><div class="desc">榜单页面截图上传</div></div></div>
+          <div class="quick-item" onclick="switchPage('tools')"><span class="icon">🧰</span><div><div class="name">工具箱</div><div class="desc">链接上传+AI主图</div></div></div>
         </div>
       </div>
       <div class="card"><div class="card-title">端口状态</div>
@@ -460,6 +461,58 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
           <button class="btn" style="background:#334155;padding:4px 10px;font-size:10px" id="btn-clear-log-rank">🗑 清除</button>
         </div>
         <div id="log-container-rank"><div class="log-line info"><span class="t">[--:--:--]</span>✨ 榜单截图就绪</div></div>
+      </div>
+    </div>
+
+    <!-- 工具箱 -->
+    <div class="page" id="page-tools">
+      <div class="card"><div class="card-title">🔗 链接上传</div>
+        <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">上传商品链接及图片素材到指定店铺。</p>
+        <div class="form-row">
+          <div class="form-group"><label>店铺</label>
+            <select id="upload-store"><option value="">请选择店铺</option>
+              <option value="9666">9666 - KONKA康佳健康电器</option>
+              <option value="9667">9667 - 康佳环境电器</option>
+              <option value="9668">9668 - 康佳冷暖电器</option>
+              <option value="9669">9669 - 銮明星</option>
+              <option value="9670">9670 - 銮明星官方旗舰店</option>
+              <option value="9671">9671 - 和草集官方旗舰店</option>
+              <option value="9672">9672 - 金正NINTAUS官方旗舰店</option>
+              <option value="9674">9674 - 茵佑旗舰店</option>
+              <option value="9675">9675 - 钻石取暖器旗舰店</option>
+            </select>
+          </div>
+          <div class="form-group"><label>产品名称</label>
+            <input type="text" id="upload-product-name" placeholder="如：海尔挂烫机">
+          </div>
+        </div>
+        <div class="form-group"><label>基础参数</label>
+          <input type="text" id="upload-base-params" placeholder="如：功率、容量等参数">
+        </div>
+        <div class="form-group"><label>图片文件</label>
+          <div style="display:flex;gap:6px">
+            <input type="text" id="upload-img-dir" placeholder="点击浏览选择图片文件夹" style="flex:1">
+            <button class="btn btn-primary" id="btn-browse-img" style="padding:8px 14px;white-space:nowrap">📁 选择</button>
+          </div>
+        </div>
+        <div class="form-group"><label>价格</label>
+          <input type="text" id="upload-price" placeholder="如：99.00">
+        </div>
+      </div>
+
+      <div class="card"><div class="card-title">🎨 AI主图生成</div>
+        <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">输入产品名称和提示词，AI生成主图。</p>
+        <div class="form-group"><label>产品名称</label>
+          <input type="text" id="ai-product-name" placeholder="如：海尔挂烫机">
+        </div>
+        <div class="form-group"><label>提示词</label>
+          <textarea id="ai-prompt" rows="4" placeholder="描述你想要的图片效果，如：白色背景，商品居中，光线柔和，专业电商风格"></textarea>
+        </div>
+        <div class="form-group"><label>成品展示</label>
+          <div id="ai-result-box" style="background:#1a1a2e;border-radius:8px;min-height:200px;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:12px;border:1px solid #2a2a4a">
+            <span id="ai-result-placeholder">生成的图片将在这里展示</span>
+          </div>
+        </div>
       </div>
     </div>
 
