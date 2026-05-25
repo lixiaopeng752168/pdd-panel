@@ -406,7 +406,42 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
       </div>
       <div class="card"><div class="card-title">榜单截图</div>
         <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">定期截取畅销榜单，监控竞品排名变化。</p>
-        <div class="btn-group"><button class="btn btn-primary" disabled>📸 立即截图</button></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div class="form-group"><label>选择店铺</label>
+            <select id="rank-port">
+              <option value="9666">KONKA康佳健康电器旗舰店</option>
+              <option value="9667">康佳环境电器旗舰店</option>
+              <option value="9668">康佳冷暖电器旗舰店</option>
+              <option value="9669">康佳家居清洁旗舰店</option>
+              <option value="9670">海尔岑甫专卖店</option>
+              <option value="9671">和草集官方旗舰店</option>
+              <option value="9672">金正NINTAUS官方旗舰店</option>
+              <option value="9674">茵佑旗舰店</option>
+              <option value="9675">钻石取暖器旗舰店</option>
+            </select>
+          </div>
+          <div class="form-group"><label>榜单名称</label>
+            <select id="rank-sheet">
+              <option value="Sheet1">Sheet1 - 挂烫机畅销榜</option>
+              <option value="Sheet2">Sheet2 - 大功率车载吸尘器畅销榜</option>
+              <option value="Sheet3">Sheet3 - 无线除螨仪畅销榜</option>
+              <option value="Sheet4">Sheet4 - 有线吸尘器畅销榜</option>
+              <option value="Sheet5">Sheet5 - 吸拖一体吸尘器畅销榜</option>
+              <option value="Sheet6">Sheet6 - 品牌眼部按摩器畅销榜</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>飞书表格链接</label>
+          <input type="text" id="rank-feishu-url" placeholder="https://bys.vika.cn/share/xxxxx" style="width:100%;box-sizing:border-box">
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+          <button class="btn btn-primary" id="btn-rank-start">📸 开始截图</button>
+          <button class="btn btn-secondary" id="btn-rank-stop" disabled>■ 停止</button>
+          <span id="rank-status" style="font-size:12px;color:var(--text-dim);margin-left:4px">● 待机</span>
+        </div>
+        <div class="result-report" id="rank-result" style="display:none;margin-top:8px;padding:10px 12px;background:#0f172a;border-radius:8px;border:1px solid #1e3a5f">
+          <div id="rank-result-text" style="font-size:13px;line-height:1.7"></div>
+        </div>
       </div>
     </div>
     <!-- 工具箱 -->
@@ -841,6 +876,77 @@ function startAuditPoll(){
   },3000);
 }
 function stopAuditPoll(){if(auditPollTimer){clearInterval(auditPollTimer);auditPollTimer=null;}}
+
+// -------- 榜单截图 --------
+$('btn-rank-start').addEventListener('click',async()=>{
+  const port=$('rank-port').value;
+  const sheet=$('rank-sheet').value;
+  const feishuUrl=$('rank-feishu-url').value.trim();
+  $('btn-rank-start').disabled=true;
+  $('btn-rank-stop').disabled=false;
+  $('rank-status').textContent='● 运行中';
+  $('rank-result').style.display='none';
+  addLog('📸 榜单截图任务已启动 端口:'+port+' 榜单:'+sheet,'info');
+  try{
+    const resp=await fetch('/api/start_rank_task',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({port,sheet,feishuUrl})
+    });
+    const d=await resp.json();
+    if(d.success){
+      $('rank-result').style.display='block';
+      $('rank-result-text').innerHTML='⏳ 榜单截图任务运行中...<br>端口: <b>'+port+'</b> | 榜单: <b>'+sheet+'</b>';
+      startRankPoll();
+    } else {
+      $('rank-result').style.display='block';
+      $('rank-result-text').innerHTML='<span style="color:var(--red)">❌ </span>'+d.message;
+      $('btn-rank-start').disabled=false;
+      $('btn-rank-stop').disabled=true;
+      $('rank-status').textContent='● 失败';
+    }
+  }catch(e){
+    $('rank-result').style.display='block';
+    $('rank-result-text').innerHTML='<span style="color:var(--red)">❌ </span>请求失败:'+e.message;
+    $('btn-rank-start').disabled=false;
+    $('btn-rank-stop').disabled=true;
+    $('rank-status').textContent='● 失败';
+  }
+});
+
+$('btn-rank-stop').addEventListener('click',async()=>{
+  $('btn-rank-start').disabled=false;
+  $('btn-rank-stop').disabled=true;
+  $('rank-status').textContent='● 已停止';
+  addLog('■ 榜单截图任务已停止','warning');
+  stopRankPoll();
+  try{await fetch('/api/stop_rank_task',{method:'POST'});}catch(e){}
+});
+
+let rankPollTimer=null;
+function startRankPoll(){
+  stopRankPoll();
+  rankPollTimer=setInterval(async()=>{
+    try{
+      const r=await fetch('/api/rank_result');
+      const d=await r.json();
+      if(d.done){
+        stopRankPoll();
+        $('btn-rank-start').disabled=false;
+        $('btn-rank-stop').disabled=true;
+        $('rank-status').textContent='● 已完成';
+        if(d.success){
+          $('rank-result-text').innerHTML='<span style="color:var(--green)">✅ </span>榜单截图完成<br>'+(d.message||'');
+          addLog('✅ 榜单截图完成: '+d.message,'success');
+        } else {
+          $('rank-result-text').innerHTML='<span style="color:var(--yellow)">⚠️ </span>'+(d.message||'任务结束');
+          addLog('⚠️ 榜单截图: '+(d.message||'任务结束'),'warning');
+        }
+      }
+    }catch(e){}
+  },3000);
+}
+function stopRankPoll(){if(rankPollTimer){clearInterval(rankPollTimer);rankPollTimer=null;}}
 
 switchPage('home');
 checkBrowserStatus();
