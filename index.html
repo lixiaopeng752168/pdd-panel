@@ -471,7 +471,9 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
 const $ = id => document.getElementById(id);
 const pages = document.querySelectorAll('.page');
 const navItems = document.querySelectorAll('.nav-item');
-const pageTitles = {home:'🏠 首页',browser:'🌐 浏览器控制',video:'📹 视频批量发布',order:'⏰ 定时拍单',report:'📊 数据播报',review:'⚠️ 差评处理',audit:'🔍 视频审核',eval:'📝 评价抓取',price:'💰 价格监控',tools:'🧰 工具箱',logs:'📋 系统日志'};
+// Logo 点击回首页
+document.querySelector('.sidebar-logo').addEventListener('click', () => switchPage('home'));
+const pageTitles = {home:'🏠 首页',browser:'🌐 浏览器控制',video:'📹 视频批量发布',order:'⏰ 定时拍单',report:'📊 数据播报',review:'⚠️ 差评处理',audit:'🔍 视频审核',eval:'📝 评价抓取',price:'💰 价格监控',rank:'📸 榜单截图',tools:'🧰 工具箱',logs:'📋 系统日志'};
 
 function switchPage(name) {
   pages.forEach(p => p.classList.remove('active'));
