@@ -460,9 +460,7 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
               </label>
             </div>
           </div>
-          <div class="form-group" style="flex:2"><label>飞书表格链接（选填）</label>
-            <input type="text" id="eval-feishu-url" placeholder="https://my.feishu.cn/sheets/SWOwsGJtYh31wlt9x8OcakoUnBb">
-          </div>
+
         </div>
         <div class="btn-group">
           <button class="btn btn-primary" id="btn-eval-start">📥 开始抓取</button>
@@ -939,37 +937,37 @@ $('btn-audit-stop').addEventListener('click',async()=>{
 $('btn-eval-start').addEventListener('click',async()=>{
   const port=$('eval-port').value;
   const goodsId=$('eval-goods-id').value.trim();
-  const feishuUrl=$('eval-feishu-url').value.trim();
   if(!goodsId){addLog('❌ 请填写商品ID','error');return;}
-  // 收集选中星级
   const selectedStars = Array.from(document.querySelectorAll('.eval-star-cb:checked')).map(o=>o.value);
   if(selectedStars.length===0){addLog('❌ 请至少选择一个星级','error');return;}
 
   $('btn-eval-start').disabled=true;
   $('btn-eval-stop').disabled=false;
   $('eval-status').textContent='● 运行中';
-  $('eval-result').style.display='none';
+  $('eval-count').textContent='';
+  $('eval-tbody').innerHTML='<tr><td colspan="3" style="padding:20px;text-align:center;color:var(--text-dim)">抓取中，请稍候...</td></tr>';
+  $('btn-eval-export').disabled=true;
   addLog('========================================','info');
   addLog('📥 启动评价抓取 端口:'+port,'info');
   addLog('   商品ID: '+goodsId,'info');
   addLog('   星级: '+selectedStars.map(s=>s+'星').join(','),'info');
-  addLog('   飞书: '+(feishuUrl||'（不写入）'),'info');
   addLog('========================================','info');
 
   try{
     const r=await fetch('/api/start_eval_task',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({port,goodsId,stars:selectedStars,feishuUrl})
+      body:JSON.stringify({port,goodsId,stars:selectedStars})
     });
     const d=await r.json();
     if(d.success){
       addLog('✅ '+d.message,'success');
-      $('eval-result').style.display='block';
-      $('eval-result-text').innerHTML='✅ 已启动端口 <b>'+port+'</b> 的评价抓取任务<br>商品ID: <b>'+goodsId+'</b> | 星级: <b>'+selectedStars.join(',')+'星</b>';
-      startEvalPoll();
+      startEvalPoll(goodsId,selectedStars.join(','));
     } else {
       addLog('❌ '+d.message,'error');
+      $('btn-eval-start').disabled=false;
+      $('btn-eval-stop').disabled=true;
+      $('eval-status').textContent='● 失败';
     }
   }catch(e){addLog('❌ 请求失败: '+e.message,'error');}
   finally{
@@ -988,9 +986,12 @@ $('btn-eval-stop').addEventListener('click',async()=>{
   try{await fetch('/api/stop_eval_task',{method:'POST'});}catch(e){}
 });
 
+// 评价抓取数据（全局）
+let _evalData = [];
+
 // 轮询评价抓取结果
 let evalPollTimer=null;
-function startEvalPoll(){
+function startEvalPoll(goodsId, stars){
   stopEvalPoll();
   evalPollTimer=setInterval(async()=>{
     try{
@@ -1002,17 +1003,70 @@ function startEvalPoll(){
         $('btn-eval-stop').disabled=true;
         $('eval-status').textContent='● 已完成';
         if(d.total>0){
-          $('eval-result-text').innerHTML='<span style="color:var(--green)">✅ </span>抓取完成，共 <b>'+d.total+'</b> 条评价'+(d.feishuUrl?'<br>已写入飞书: <a href="'+d.feishuUrl+'" target="_blank" style="color:var(--cyan)">'+d.feishuUrl+'</a>':'');
           addLog('✅ 抓取完成：'+d.total+'条评价','success');
+          $('eval-count').textContent='（'+d.total+'条）';
+          // 查询并展示数据
+          await loadEvalTable(goodsId, stars);
         } else {
-          $('eval-result-text').innerHTML='<span style="color:var(--yellow)">⚠️ </span>未抓取到数据，请检查商品ID和筛选条件';
           addLog('⚠️ 未抓取到数据','warning');
+          $('eval-tbody').innerHTML='<tr><td colspan="3" style="padding:20px;text-align:center;color:var(--yellow)">未抓取到数据，请检查商品ID和筛选条件</td></tr>';
         }
       }
     }catch(e){}
   },3000);
 }
 function stopEvalPoll(){if(evalPollTimer){clearInterval(evalPollTimer);evalPollTimer=null;}}
+
+// 加载评价表格
+async function loadEvalTable(goodsId, stars){
+  try{
+    const q = new URLSearchParams({goods_id: goodsId});
+    if(stars) q.set('stars', stars);
+    const r = await fetch('/api/eval_query?'+q.toString());
+    const d = await r.json();
+    _evalData = d.rows || [];
+    if(_evalData.length === 0){
+      $('eval-tbody').innerHTML='<tr><td colspan="3" style="padding:20px;text-align:center;color:var(--text-dim)">暂无数据</td></tr>';
+      $('btn-eval-export').disabled=true;
+      return;
+    }
+    $('eval-tbody').innerHTML = _evalData.map(r=>{
+      const stars = '⭐'.repeat(r.star||3);
+      const content = (r.content||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const orderNo = (r.order_no||'—');
+      return `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:6px 8px;white-space:nowrap">${stars}</td>
+        <td style="padding:6px 8px;max-width:320px;word-break:break-all">${content}</td>
+        <td style="padding:6px 8px;white-space:nowrap;font-size:11px;color:var(--text-dim)">${orderNo}</td>
+      </tr>`;
+    }).join('');
+    $('btn-eval-export').disabled=false;
+  }catch(e){
+    $('eval-tbody').innerHTML='<tr><td colspan="3" style="padding:20px;text-align:center;color:var(--red)">加载失败: '+e.message+'</td></tr>';
+  }
+}
+
+// 导出CSV
+$('btn-eval-export').addEventListener('click',()=>{
+  if(!_evalData.length) return;
+  const goodsId = $('eval-goods-id').value.trim();
+  const header = '﻿星级,订单号,评价内容
+';
+  const rows = _evalData.map(r=>{
+    const stars = (r.star||3)+'星';
+    const orderNo = (r.order_no||'');
+    const content = ('"'+(r.content||'').replace(/"/g,'""')+'"');
+    return [stars, orderNo, content].join(',');
+  }).join('
+');
+  const blob = new Blob([header+rows], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'eval_'+goodsId+'_'+(new Date().toISOString().slice(0,10))+'.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+});
 
 switchPage('home');
 let auditPollTimer=null;
