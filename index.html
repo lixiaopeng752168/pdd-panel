@@ -126,8 +126,6 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
       input, select, textarea { font-size: 16px !important; padding: 10px 12px !important; }
       /* 顶部状态栏 */
       .header-status { display: none; }
-      /* 登录页适配手机 */
-      #login-screen .login-box { width: 90% !important; max-width: 320px; }
     }
     /* 手机顶部导航（显示在 .main 上方） */
     @media (max-width: 700px) {
@@ -150,24 +148,6 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
   </style>
 </head>
 <body>
-<div id="login-screen" style="position:fixed;inset:0;background:#0f0f23;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column">
-  <div style="text-align:center;margin-bottom:30px">
-    <div style="font-size:48px;margin-bottom:10px">📦</div>
-    <div style="font-size:20px;color:#fff;font-weight:600">拼多多运营面板</div>
-    <div style="font-size:12px;color:#888;margin-top:4px">请输入访问密码</div>
-  </div>
-  <div style="background:#1a1a2e;border-radius:12px;padding:30px;width:300px;box-shadow:0 8px 32px rgba(0,0,0,0.4)">
-    <input type="password" id="login-password" placeholder="请输入密码" onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;padding:12px 14px;border-radius:8px;border:1px solid #2a2a4a;background:#16213e;color:#fff;font-size:14px;box-sizing:border-box;outline:none;text-align:center">
-    <div id="login-error" style="color:#e94560;font-size:12px;margin-top:8px;display:none;text-align:center"></div>
-    <div style="display:flex;align-items:center;justify-content:center;margin-top:14px">
-      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:#888">
-        <input type="checkbox" id="login-remember" style="accent-color:#e94560">
-        <span>记住我</span>
-      </label>
-    </div>
-    <button onclick="doLogin()" style="width:100%;padding:12px;background:#e94560;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;margin-top:16px">登 录</button>
-  </div>
-</div>
 <div id="update-banner" style="display:none;background:linear-gradient(90deg,#1a1a2e,#16213e);border-bottom:1px solid #0f3460;padding:10px 16px;text-align:center;font-size:13px;color:#e2e2e2;position:relative;">
   <span>🎉 发现新版本 <span id="update-version"></span>，更新内容：</span>
   <button onclick="doUpdate()" style="background:#e94560;color:#fff;border:none;padding:5px 14px;border-radius:4px;cursor:pointer;margin-left:10px;font-size:12px;">立即更新</button>
@@ -231,9 +211,9 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
           <div class="quick-item" onclick="switchPage('eval')"><span class="icon">📝</span><div><div class="name">评价抓取</div><div class="desc">评价数据→飞书</div></div></div>
           <div class="quick-item" onclick="switchPage('price')"><span class="icon">💰</span><div><div class="name">价格监控</div><div class="desc">价格检查</div></div></div>
           <div class="quick-item" onclick="switchPage('rank')"><span class="icon">📸</span><div><div class="name">榜单截图</div><div class="desc">榜单页面截图上传</div></div></div>
-          <div class="quick-item" onclick="switchPage('tools')"><span class="icon">🔗</span><div><div class="name">链接上传</div><div class="desc">商品链接+图片上传</div></div></div>
-          <div class="quick-item" onclick="switchPage('ai')"><span class="icon">🎨</span><div><div class="name">AI主图生成</div><div class="desc">提示词生成主图</div></div></div>
-          <div class="quick-item" onclick="switchPage('activity')"><span class="icon">🏷️</span><div><div class="name">活动报名</div><div class="desc">大促/秒杀/多人团</div></div></div>
+          <div class="quick-item" onclick="switchPage('tools')"><span class="icon">🔗</span><div><div class="name">链接上传 <span style="color:#f0883e;font-size:10px">开发中</span></div><div class="desc">商品链接+图片上传</div></div></div>
+          <div class="quick-item" onclick="switchPage('ai')"><span class="icon">🎨</span><div><div class="name">AI主图生成 <span style="color:#f0883e;font-size:10px">开发中</span></div><div class="desc">提示词生成主图</div></div></div>
+          <div class="quick-item" onclick="switchPage('activity')"><span class="icon">🏷️</span><div><div class="name">活动报名 <span style="color:#f0883e;font-size:10px">开发中</span></div><div class="desc">大促/秒杀/多人团</div></div></div>
         </div>
       </div>
       <div class="card"><div class="card-title">端口状态</div>
@@ -549,7 +529,7 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
 
     <!-- 链接上传 -->
     <div class="page" id="page-tools">
-      <div class="card"><div class="card-title">🔗 链接上传</div>
+      <div class="card"><div class="card-title">🔗 链接上传 <span style="color:#f0883e">（开发中）</span></div>
         <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">上传商品链接及图片素材到指定店铺。</p>
         <div class="form-row">
           <div class="form-group"><label>店铺</label>
@@ -586,7 +566,7 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
 
     <!-- AI主图生成 -->
     <div class="page" id="page-ai">
-      <div class="card"><div class="card-title">🎨 AI主图生成</div>
+      <div class="card"><div class="card-title">🎨 AI主图生成 <span style="color:#f0883e">（开发中）</span></div>
         <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">输入产品名称和提示词，AI生成主图。</p>
         <div class="form-group"><label>产品名称</label>
           <input type="text" id="ai-product-name" placeholder="如：海尔挂烫机">
@@ -604,7 +584,7 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
 
     <!-- 拼多多活动报名 -->
     <div class="page" id="page-activity">
-      <div class="card"><div class="card-title">🏷️ 拼多多活动报名</div>
+      <div class="card"><div class="card-title">🏷️ 拼多多活动报名 <span style="color:#f0883e">（开发中）</span></div>
         <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">报名参与拼多多各类营销活动，获取更多流量曝光。</p>
         <div class="form-row">
           <div class="form-group"><label>店铺</label>
@@ -1156,27 +1136,15 @@ async function doUpdate(){
   }catch(e){addLog('❌ 更新失败: '+e.message,'error');}
 }
 
-checkLogin();
+showPanel();
 
 // 登录检查
-async function checkLogin(){
-  const saved = localStorage.getItem('pdd_panel_token');
-  if(saved){
-    try{
-      const r = await fetch('/api/login_status', {headers:{'Authorization':'Bearer '+saved}});
-      const d = await r.json();
-      if(d.logged_in){ showPanel(); return; }
-    }catch(e){}
-  }
-  // 没登录或 token 无效，显示登录页
-  document.getElementById('login-screen').style.display = 'flex';
-  document.querySelector('.sidebar').style.display = 'none';
-  document.querySelector('.main').style.display = 'none';
-  document.getElementById('header-bar') && (document.getElementById('header-bar').style.display = 'none');
+// 登录已禁用，直接显示面板
+function checkLogin(){
+  showPanel();
 }
 
 function showPanel(){
-  document.getElementById('login-screen').style.display = 'none';
   document.querySelector('.sidebar').style.display = '';
   document.querySelector('.main').style.display = '';
   const hb = document.getElementById('header-bar');
@@ -1186,42 +1154,7 @@ function showPanel(){
   setInterval(checkBrowserStatus, 5000);
   checkUpdate();
 }
-
-async function doLogin(){
-  const pwd = document.getElementById('login-password').value;
-  const remember = document.getElementById('login-remember').checked;
-  if(!pwd){ return; }
-  try{
-    const r = await fetch('/api/login',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({password:pwd, remember})
-    });
-    const d = await r.json();
-    if(d.success){
-      if(remember){ localStorage.setItem('pdd_panel_token', d.token); }
-      showPanel();
-    } else {
-      document.getElementById('login-error').textContent = d.message || '密码错误';
-      document.getElementById('login-error').style.display = 'block';
-    }
-  }catch(e){
-    document.getElementById('login-error').textContent = '登录失败';
-    document.getElementById('login-error').style.display = 'block';
-  }
-}
-
-// 劫持 fetch，注入 token
-const _fetch = window.fetch;
-window.fetch = function(url, opts){
-  const saved = localStorage.getItem('pdd_panel_token');
-  if(saved && !url.startsWith('/api/login')){
-    opts = opts || {};
-    opts.headers = opts.headers || {};
-    if(!opts.headers['Authorization']) opts.headers['Authorization'] = 'Bearer '+saved;
-  }
-  return _fetch.call(this, url, opts);
-};
+// 登录已禁用
 </script>
 </body>
 </html>
