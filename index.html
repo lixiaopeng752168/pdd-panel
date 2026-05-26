@@ -498,15 +498,8 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
         </div>
 
         <div style="margin-bottom:12px">
-          <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">榜单名称</label>
-          <select id="rank-sheet" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg-secondary);color:var(--text)">
-            <option value="Sheet1">挂烫机</option>
-            <option value="Sheet2">车载吸尘器</option>
-            <option value="Sheet3">无线除螨仪</option>
-            <option value="Sheet4">有线吸尘器</option>
-            <option value="Sheet5">吸拖一体</option>
-            <option value="Sheet6">品牌眼部按摩器</option>
-          </select>
+          <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">榜单链接</label>
+          <input type="text" id="rank-url" placeholder="https://mobile.yangkeduo.com/sjs_xxx.html?list_id=xxx" value="" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg-secondary);color:var(--text)">
         </div>
 
         <div style="margin-bottom:12px">
@@ -1051,8 +1044,9 @@ function stopAuditPoll(){if(auditPollTimer){clearInterval(auditPollTimer);auditP
 // -------- 榜单截图 --------
 $('btn-rank-start').addEventListener('click',async()=>{
   const port=$('rank-port').value;
-  const sheet=$('rank-sheet').value;
+  const rankUrl=$('rank-url').value.trim();
   const feishuUrl=$('rank-feishu-url').value.trim();
+  if(!rankUrl){alert('请填写榜单链接');return;}
   $('btn-rank-start').disabled=true;
   $('btn-rank-stop').disabled=false;
   $('rank-status').textContent='● 运行中';
@@ -1062,12 +1056,12 @@ $('btn-rank-start').addEventListener('click',async()=>{
     const resp=await fetch('/api/start_rank_task',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({port,sheet,feishuUrl})
+      body: JSON.stringify({port, rankUrl, feishuUrl}),
     });
     const d=await resp.json();
     if(d.success){
       $('rank-result').style.display='block';
-      $('rank-result-text').innerHTML='⏳ 榜单截图任务运行中...<br>端口: <b>'+port+'</b> | 榜单: <b>'+sheet+'</b>';
+      $('rank-result-text').innerHTML='⏳ 榜单截图任务运行中...<br>端口: <b>'+port+'</b> | 链接: <b>'+rankUrl.substring(0,50)+'...</b>';
       startRankPoll();
     } else {
       $('rank-result').style.display='block';
