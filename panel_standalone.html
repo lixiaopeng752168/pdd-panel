@@ -717,6 +717,7 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
           </select>
           <button class="btn btn-primary" style="font-size:12px;padding:7px 16px" onclick="doPriceCheckSelected()">🔍 开始检查</button>
           <button class="btn" style="background:#334155;font-size:12px;padding:7px 16px" onclick="doPriceCheckAll()">🌐 全部店铺检查</button>
+          <button id="btn-price-stop" class="btn" style="background:#7f1d1d;font-size:12px;padding:7px 16px;display:none" onclick="doPriceStop()">⏸ 暂停</button>
         </div>
         <!-- 添加按钮 + 备注 -->
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
@@ -1280,14 +1281,21 @@ async function doPriceCheckAll(){
   if(!items.length){ addLog('监控列表为空，请先添加链接', 'warn'); return; }
   addLog(`开始全部店铺检查，共${items.length}个链接…`, 'info');
   const btn = document.querySelector('[onclick="doPriceCheckAll()"]');
+  const stopBtn = $('btn-price-stop');
   if(btn) btn.disabled=true;
+  stopBtn.style.display='inline-block';
+  stopBtn.textContent='⏸ 停止';
+  _priceStopFlag = false;
   const resultDiv = $('price-check-result');
   resultDiv.style.display='block';
   resultDiv.innerHTML='<div style="color:var(--text-dim)">检查中…</div>';
   try {
     const r2 = await fetch('/api/price_check_all', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'});
     const d2 = await r2.json();
-    if(d2.success){
+    if(_priceStopFlag){
+      resultDiv.innerHTML='<div style="color:#f87171">已停止</div>';
+      addLog('全部检查已停止', 'warn');
+    } else if(d2.success){
       const res = d2.results || [];
       let html='<div style="margin-bottom:6px;font-weight:600">检查结果:</div>';
       const statusMap={normal:'✅',low:'🔴',high:'🟠',unknown:'⚪',error:'❌'};
@@ -1307,7 +1315,15 @@ async function doPriceCheckAll(){
     addLog('全部检查异常: '+e.message, 'error');
   }
   if(btn) btn.disabled=false;
+  stopBtn.style.display='none';
   loadPriceList();
+}
+
+let _priceStopFlag = false;
+function doPriceStop(){
+  _priceStopFlag = true;
+  const stopBtn = $('btn-price-stop');
+  if(stopBtn) stopBtn.textContent='⏸ 停止中…';
 }
 
 async function doPriceCheckSelected(){
@@ -1318,11 +1334,26 @@ async function doPriceCheckSelected(){
   const items = (d.items||[]).filter(x=>parseInt(x.port)===port);
   if(!items.length){ addLog('该端口下暂无监控链接', 'warn'); return; }
   addLog(`检查端口${port}下${items.length}个链接…`, 'info');
+  const btn = document.querySelector('[onclick="doPriceCheckSelected()"]');
+  const stopBtn = $('btn-price-stop');
+  if(btn) btn.disabled=true;
+  stopBtn.style.display='inline-block';
+  stopBtn.textContent='⏸ 停止';
+  _priceStopFlag = false;
   const resultDiv = $('price-check-result');
   resultDiv.style.display='block';
   let html='<div style="margin-bottom:6px;font-weight:600">检查结果:</div>';
   let abnormal=0;
   for(const item of items){
+    if(_priceStopFlag){
+      html+='<div style="color:#f87171">已停止，剩余'+(items.indexOf(item))+'个未检查</div>';
+      resultDiv.innerHTML=html;
+      addLog('检查已停止', 'warn');
+      if(btn) btn.disabled=false;
+      stopBtn.style.display='none';
+      loadPriceList();
+      return;
+    }
     const r2 = await fetch('/api/price_check', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({goods_id:item.goods_id, port:item.port, min_price:item.min_price, max_price:item.max_price, name:item.name||''})
@@ -1332,9 +1363,12 @@ async function doPriceCheckSelected(){
     const rowClass=d2.status&&d2.status!=='normal'?'style="color:#f87171"':'';
     html+=`<div ${rowClass}>${icon} ${item.goods_id} → ¥${d2.current_price||0} (${d2.status||'error'})</div>`;
     if(d2.status&&d2.status!=='normal') abnormal++;
+    resultDiv.innerHTML=html;
   }
   resultDiv.innerHTML=html;
   addLog(`端口${port}检查完成: ${items.length-abnormal}正常/${abnormal}异常`, abnormal?'warn':'success');
+  if(btn) btn.disabled=false;
+  stopBtn.style.display='none';
   loadPriceList();
 }
 
