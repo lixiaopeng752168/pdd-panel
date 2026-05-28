@@ -699,10 +699,80 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
 
     <!-- 价格监控 -->
     <div class="page" id="page-price">
-      <div class="card"><div class="card-title">价格检查</div>
-        <p style="font-size:11px;color:var(--text-dim);line-height:1.8;margin-bottom:12px">监控商品价格变化，发现低价乱价行为。</p>
-        <div class="btn-group"><button class="btn btn-primary" disabled>🔍 立即检查</button></div>
+      <!-- 顶部操作栏 -->
+      <div class="card">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+          <div style="font-weight:600;font-size:13px">店铺端口:</div>
+          <select id="price-all-port" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 10px;font-size:12px">
+            <option value="">全部店铺</option>
+            <option value="9666">9666 - KONKA康佳健康电器</option>
+            <option value="9667">9667 - 康佳环境电器</option>
+            <option value="9668">9668 - 康佳冷暖电器</option>
+            <option value="9669">9669 - 康佳家居清洁</option>
+            <option value="9670">9670 - 海尔岑甫</option>
+            <option value="9671">9671 - 和草集</option>
+            <option value="9672">9672 - 金正</option>
+            <option value="9673">9673 - 莱德尼诺旗舰店</option>
+            <option value="9674">9674 - 茵佑旗舰店</option>
+            <option value="9675">9675 - 钻石取暖器旗舰店</option>
+          </select>
+          <button class="btn btn-primary" style="font-size:12px;padding:7px 16px" onclick="doPriceCheckSelected()">🔍 开始检查</button>
+          <button class="btn" style="background:#334155;font-size:12px;padding:7px 16px" onclick="doPriceCheckAll()">🌐 全部店铺检查</button>
+          <button class="btn" style="background:#1a4033;font-size:12px;padding:7px 16px" onclick="showPriceAdd()">➕ 添加链接</button>
+        </div>
+        <!-- 检查进度/结果展示 -->
+        <div id="price-check-result" style="display:none;background:var(--bg-input);border-radius:8px;padding:12px;margin-top:8px;font-size:12px;max-height:200px;overflow-y:auto"></div>
       </div>
+
+      <!-- 监控列表 -->
+      <div class="card"><div class="card-title">📦 监控链接列表</div>
+        <div id="price-empty" style="text-align:center;color:var(--text-dim);padding:20px 0;font-size:12px">
+          暂无监控链接
+        </div>
+        <div id="price-list-wrap" style="display:none">
+          <div id="price-list"></div>
+        </div>
+      </div>
+
+      <!-- 添加链接弹窗 -->
+      <div id="price-add-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center">
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px;width:380px;max-width:95vw">
+          <div style="font-weight:600;margin-bottom:16px">添加监控链接</div>
+          <div class="form-group"><label>商品ID</label>
+            <input type="text" id="price-gid" placeholder="输入商品ID或粘贴商品链接">
+          </div>
+          <div class="form-group"><label>商品名称（备注）</label>
+            <input type="text" id="price-name" placeholder="如：康佳加湿器 方便识别">
+          </div>
+          <div class="form-group"><label>店铺端口</label>
+            <select id="price-port" style="width:100%;background:var(--bg-input);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px">
+              <option value="9666">9666 - KONKA康佳健康电器</option>
+              <option value="9667">9667 - 康佳环境电器</option>
+              <option value="9668">9668 - 康佳冷暖电器</option>
+              <option value="9669">9669 - 康佳家居清洁</option>
+              <option value="9670">9670 - 海尔岑甫</option>
+              <option value="9671">9671 - 和草集</option>
+              <option value="9672">9672 - 金正</option>
+              <option value="9673">9673 - 莱德尼诺旗舰店</option>
+              <option value="9674">9674 - 茵佑旗舰店</option>
+              <option value="9675">9675 - 钻石取暖器旗舰店</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:10px">
+            <div class="form-group" style="flex:1"><label>最低价(元)</label>
+              <input type="number" id="price-min" placeholder="0" step="0.01">
+            </div>
+            <div class="form-group" style="flex:1"><label>最高价(元)</label>
+              <input type="number" id="price-max" placeholder="999" step="0.01">
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end">
+            <button class="btn" style="background:#334155;font-size:12px" onclick="hidePriceAdd()">取消</button>
+            <button class="btn btn-primary" onclick="doPriceAdd()">添加</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="card"><div class="card-title">系统日志</div>
         <div style="margin-bottom:8px"><button class="btn" style="background:#334155;font-size:10px;padding:5px 12px" id="btn-clear-all-log">🗑 清除日志</button></div>
         <div id="log-container-all"><div class="log-line info"><span class="t">[--:--:--]</span>✨ 系统日志已就绪</div></div>
@@ -1130,6 +1200,171 @@ function startEvalPoll(goodsId, stars){
   },3000);
 }
 function stopEvalPoll(){if(evalPollTimer){clearInterval(evalPollTimer);evalPollTimer=null;}}
+
+// ========== 价格监控 ==========
+async function loadPriceList(){
+  try {
+    const r = await fetch('/api/price_list');
+    const d = await r.json();
+    const items = d.items || [];
+    $('price-empty').style.display = items.length ? 'none' : 'block';
+    $('price-list-wrap').style.display = items.length ? 'block' : 'none';
+    if(!items.length) return;
+    $('price-list').innerHTML = items.map(item => {
+      const statusMap = {normal:'✅ 正常', low:'🔴 低价', high:'🟠 高价', unknown:'⚪ 未知'};
+      const status = statusMap[item.status] || '⚪ 未知';
+      const statusColor = {normal:'#4ade80', low:'#f87171', high:'#fb923c', unknown:'#94a3b8'}[item.status] || '#94a3b8';
+      const curP = item.current_price ? '¥'+Number(item.current_price).toFixed(2) : '—';
+      const lastCheck = item.last_check || '—';
+      const range = item.min_price && item.max_price ? `¥${item.min_price} ~ ¥${item.max_price}` : '—';
+      return `<div style="background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px">
+          <div>
+            <div style="font-weight:600;font-size:13px">${item.name || item.goods_id}</div>
+            <div style="font-size:11px;color:var(--text-dim);margin-top:2px">ID: ${item.goods_id} | 端口: ${item.port}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="color:${statusColor};font-weight:600;font-size:13px">${status}</div>
+            <div style="font-size:11px;color:var(--text-dim);margin-top:2px">${lastCheck}</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:11px;color:var(--text-dim)">当前价: <span style="color:var(--text);font-weight:600">${curP}</span> &nbsp;|&nbsp; 区间: ${range}</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-primary" style="font-size:10px;padding:4px 10px" onclick="doPriceCheck('${item.goods_id}',${item.port},${item.min_price||0},${item.max_price||999999})" ${item.status==='checking'?'disabled':''}>🔍 查价</button>
+            <button class="btn" style="background:#334155;font-size:10px;padding:4px 10px" onclick="doPriceRemove('${item.goods_id}')">🗑</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    console.error('loadPriceList:', e);
+  }
+}
+
+function showPriceAdd(){
+  $('price-gid').value='';
+  $('price-name').value='';
+  $('price-min').value='';
+  $('price-max').value='';
+  $('price-port').value='9666';
+  $('price-add-modal').style.display='flex';
+}
+function hidePriceAdd(){
+  $('price-add-modal').style.display='none';
+}
+
+async function doPriceAdd(){
+  const gid = $('price-gid').value.trim().replace(/.*goods\/|id=(\d+).*/i,'$1').trim();
+  const name = $('price-name').value.trim();
+  const port = parseInt($('price-port').value);
+  const minP = parseFloat($('price-min').value) || 0;
+  const maxP = parseFloat($('price-max').value) || 999999;
+  if(!gid){ alert('请输入商品ID'); return; }
+  hidePriceAdd();
+  // 直接调用查价，把商品加入监控
+  await doPriceCheck(gid, port, minP, maxP, name);
+  loadPriceList();
+}
+
+async function doPriceCheckAll(){
+  const r = await fetch('/api/price_list');
+  const d = await r.json();
+  const items = d.items || [];
+  if(!items.length){ addLog('监控列表为空，请先添加链接', 'warn'); return; }
+  addLog(`开始全部店铺检查，共${items.length}个链接…`, 'info');
+  const btn = document.querySelector('[onclick="doPriceCheckAll()"]');
+  if(btn) btn.disabled=true;
+  const resultDiv = $('price-check-result');
+  resultDiv.style.display='block';
+  resultDiv.innerHTML='<div style="color:var(--text-dim)">检查中…</div>';
+  try {
+    const r2 = await fetch('/api/price_check_all', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'});
+    const d2 = await r2.json();
+    if(d2.success){
+      const res = d2.results || [];
+      let html='<div style="margin-bottom:6px;font-weight:600">检查结果:</div>';
+      const statusMap={normal:'✅',low:'🔴',high:'🟠',unknown:'⚪',error:'❌'};
+      res.forEach(item=>{
+        const icon=statusMap[item.status]||'⚪';
+        const rowClass=item.status==='normal'?'style="color:#4ade80"':item.status==='low'||item.status==='high'?'style="color:#f87171"':'';
+        html+=`<div ${rowClass}>${icon} 端口${item.port} 商品${item.goods_id} → ¥${item.price} (${item.status})</div>`;
+      });
+      resultDiv.innerHTML=html;
+      addLog(`全部检查完成: ${res.filter(x=>x.status==='normal').length}正常/${res.filter(x=>x.status==='low'||x.status==='high').length}异常`, res.filter(x=>x.status!=='normal').length?'warn':'success');
+    } else {
+      resultDiv.innerHTML='<div style="color:#f87171">失败: '+d2.error+'</div>';
+      addLog('全部检查失败: '+d2.error, 'error');
+    }
+  } catch(e){
+    resultDiv.innerHTML='<div style="color:#f87171">异常: '+e.message+'</div>';
+    addLog('全部检查异常: '+e.message, 'error');
+  }
+  if(btn) btn.disabled=false;
+  loadPriceList();
+}
+
+async function doPriceCheckSelected(){
+  const port = parseInt($('price-all-port').value);
+  if(!port){ addLog('请先选择店铺端口', 'warn'); return; }
+  const r = await fetch('/api/price_list');
+  const d = await r.json();
+  const items = (d.items||[]).filter(x=>parseInt(x.port)===port);
+  if(!items.length){ addLog('该端口下暂无监控链接', 'warn'); return; }
+  addLog(`检查端口${port}下${items.length}个链接…`, 'info');
+  const resultDiv = $('price-check-result');
+  resultDiv.style.display='block';
+  let html='<div style="margin-bottom:6px;font-weight:600">检查结果:</div>';
+  let abnormal=0;
+  for(const item of items){
+    const r2 = await fetch('/api/price_check', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({goods_id:item.goods_id, port:item.port, min_price:item.min_price, max_price:item.max_price, name:item.name||''})
+    });
+    const d2 = await r2.json();
+    const icon=d2.success?(d2.status==='normal'?'✅':d2.status==='low'?'🔴':d2.status==='high'?'🟠':'⚪'):'❌';
+    const rowClass=d2.status&&d2.status!=='normal'?'style="color:#f87171"':'';
+    html+=`<div ${rowClass}>${icon} ${item.goods_id} → ¥${d2.current_price||0} (${d2.status||'error'})</div>`;
+    if(d2.status&&d2.status!=='normal') abnormal++;
+  }
+  resultDiv.innerHTML=html;
+  addLog(`端口${port}检查完成: ${items.length-abnormal}正常/${abnormal}异常`, abnormal?'warn':'success');
+  loadPriceList();
+}
+
+async function doPriceCheck(gid, port, minP, maxP, name){
+  addLog(`查价: ${gid} (端口${port})…`);
+  try {
+    const r = await fetch('/api/price_check', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({goods_id:gid, port, min_price:minP, max_price:maxP, name})
+    });
+    const d = await r.json();
+    if(d.success){
+      const statusMap = {normal:'✅ 正常', low:'🔴 低价', high:'🟠 高价', unknown:'⚪ 未知'};
+      const msg = `查价结果 ${gid}: ¥${d.current_price} — ${statusMap[d.status]||d.status}`;
+      addLog(msg, d.status==='normal'?'success':'warn');
+    } else {
+      addLog(`查价失败 ${gid}: ${d.error}`, 'error');
+    }
+    loadPriceList();
+  } catch(e){ addLog(`查价异常 ${gid}: ${e.message}`, 'error'); }
+}
+
+async function doPriceRemove(gid){
+  if(!confirm('确认删除监控商品 '+gid+' ?')) return;
+  await fetch('/api/price_remove',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({goods_id:gid})});
+  loadPriceList();
+  addLog('已删除监控商品: '+gid);
+}
+
+// 切到价格页时加载列表
+const _origSwitchPage = switchPage;
+switchPage = function(name){
+  _origSwitchPage(name);
+  if(name==='price') loadPriceList();
+};
 
 // 加载评价表格
 async function loadEvalTable(goodsId, stars){
