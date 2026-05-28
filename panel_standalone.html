@@ -699,12 +699,11 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
 
     <!-- 价格监控 -->
     <div class="page" id="page-price">
-      <!-- 顶部操作栏 -->
+      <!-- 店铺选择 + 检查按钮 -->
       <div class="card">
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
           <div style="font-weight:600;font-size:13px">店铺端口:</div>
           <select id="price-all-port" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 10px;font-size:12px">
-            <option value="">全部店铺</option>
             <option value="9666">9666 - KONKA康佳健康电器</option>
             <option value="9667">9667 - 康佳环境电器</option>
             <option value="9668">9668 - 康佳冷暖电器</option>
@@ -718,19 +717,36 @@ body { font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, 'Segoe UI',
           </select>
           <button class="btn btn-primary" style="font-size:12px;padding:7px 16px" onclick="doPriceCheckSelected()">🔍 开始检查</button>
           <button class="btn" style="background:#334155;font-size:12px;padding:7px 16px" onclick="doPriceCheckAll()">🌐 全部店铺检查</button>
-          <button class="btn" style="background:#1a4033;font-size:12px;padding:7px 16px" onclick="showPriceAdd()">➕ 添加链接</button>
+        </div>
+        <!-- 添加按钮 + 备注 -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+          <button class="btn btn-success" style="font-size:13px;padding:8px 20px" onclick="showPriceAdd()">➕ 添加链接</button>
+          <span style="font-size:12px;color:var(--text-dim)">⚠️ 新上链接需添加</span>
         </div>
         <!-- 检查进度/结果展示 -->
-        <div id="price-check-result" style="display:none;background:var(--bg-input);border-radius:8px;padding:12px;margin-top:8px;font-size:12px;max-height:200px;overflow-y:auto"></div>
+        <div id="price-check-result" style="display:none;background:var(--bg-input);border-radius:8px;padding:12px;margin-top:8px;font-size:12px;max-height:120px;overflow-y:auto"></div>
       </div>
 
-      <!-- 监控列表 -->
-      <div class="card"><div class="card-title">📦 监控链接列表</div>
-        <div id="price-empty" style="text-align:center;color:var(--text-dim);padding:20px 0;font-size:12px">
-          暂无监控链接
-        </div>
-        <div id="price-list-wrap" style="display:none">
-          <div id="price-list"></div>
+      <!-- 监控列表：紧凑表格 + 滚动 -->
+      <div class="card" style="padding-bottom:8px">
+        <div id="price-list-scroll" style="max-height:320px;overflow-y:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border);white-space:nowrap">
+                <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-weight:500">店铺</th>
+                <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-weight:500">商品名称</th>
+                <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-weight:500">商品ID</th>
+                <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-weight:500">最低价</th>
+                <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-weight:500">最高价</th>
+                <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-weight:500">当前价</th>
+                <th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-weight:500">状态</th>
+              </tr>
+            </thead>
+            <tbody id="price-list"></tbody>
+          </table>
+          <div id="price-empty" style="text-align:center;color:var(--text-dim);padding:20px 0;font-size:12px;display:none">
+            暂无监控链接
+          </div>
         </div>
       </div>
 
@@ -1208,34 +1224,24 @@ async function loadPriceList(){
     const d = await r.json();
     const items = d.items || [];
     $('price-empty').style.display = items.length ? 'none' : 'block';
-    $('price-list-wrap').style.display = items.length ? 'block' : 'none';
-    if(!items.length) return;
+    if(!items.length){ $('price-list').innerHTML = ''; return; }
     $('price-list').innerHTML = items.map(item => {
       const statusMap = {normal:'✅ 正常', low:'🔴 低价', high:'🟠 高价', unknown:'⚪ 未知'};
       const status = statusMap[item.status] || '⚪ 未知';
       const statusColor = {normal:'#4ade80', low:'#f87171', high:'#fb923c', unknown:'#94a3b8'}[item.status] || '#94a3b8';
       const curP = item.current_price ? '¥'+Number(item.current_price).toFixed(2) : '—';
-      const lastCheck = item.last_check || '—';
       const range = item.min_price && item.max_price ? `¥${item.min_price} ~ ¥${item.max_price}` : '—';
-      return `<div style="background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px">
-        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px">
-          <div>
-            <div style="font-weight:600;font-size:13px">${item.name || item.goods_id}</div>
-            <div style="font-size:11px;color:var(--text-dim);margin-top:2px">ID: ${item.goods_id} | 端口: ${item.port}</div>
-          </div>
-          <div style="text-align:right">
-            <div style="color:${statusColor};font-weight:600;font-size:13px">${status}</div>
-            <div style="font-size:11px;color:var(--text-dim);margin-top:2px">${lastCheck}</div>
-          </div>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-size:11px;color:var(--text-dim)">当前价: <span style="color:var(--text);font-weight:600">${curP}</span> &nbsp;|&nbsp; 区间: ${range}</div>
-          <div style="display:flex;gap:6px">
-            <button class="btn btn-primary" style="font-size:10px;padding:4px 10px" onclick="doPriceCheck('${item.goods_id}',${item.port},${item.min_price||0},${item.max_price||999999})" ${item.status==='checking'?'disabled':''}>🔍 查价</button>
-            <button class="btn" style="background:#334155;font-size:10px;padding:4px 10px" onclick="doPriceRemove('${item.goods_id}')">🗑</button>
-          </div>
-        </div>
-      </div>`;
+      const portShopMap = {9666:'KONKA康佳健康',9667:'康佳环境',9668:'康佳冷暖',9669:'康佳家居清洁',9670:'海尔岑甫',9671:'和草集',9672:'金正',9673:'莱德尼诺',9674:'茵佑',9675:'钻石取暖器'};
+      const shop = portShopMap[item.port] || item.port;
+      return `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:5px 8px;white-space:nowrap">${shop}</td>
+        <td style="padding:5px 8px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.name || '—'}</td>
+        <td style="padding:5px 8px;font-family:monospace;font-size:11px">${item.goods_id}</td>
+        <td style="padding:5px 8px">${item.min_price || '—'}</td>
+        <td style="padding:5px 8px">${item.max_price || '—'}</td>
+        <td style="padding:5px 8px;font-weight:600">${curP}</td>
+        <td style="padding:5px 8px;color:${statusColor};font-weight:600">${status}</td>
+      </tr>`;
     }).join('');
   } catch(e) {
     console.error('loadPriceList:', e);
